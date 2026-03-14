@@ -80,10 +80,15 @@ When the tree is dirty and AT is connected:
    - `text()` -- creates a Label node for text content
    - `focusable()` -- records focus state on the current node
    - `scrollable()` -- records scroll position and creates ScrollBar nodes
-4. `builder.build()` resolves cross-node references (`labelled_by`,
-   `described_by`), assigns children to parents, and produces the final
-   `TreeUpdate`.
-5. The adapter pushes the update to the platform.
+4. `ui.operate()` also walks active overlays via the `Nested` wrapper.
+   Overlay widgets that implement `operate()` (such as the menu overlay
+   for ComboBox/PickList dropdowns) expose their content as additional
+   nodes. This is how popup options appear in the tree when a dropdown
+   is open.
+5. `builder.build()` resolves cross-node references (`labelled_by`,
+   `described_by`, `active_descendant`), assigns children to parents,
+   and produces the final `TreeUpdate`.
+6. The adapter pushes the update to the platform.
 
 When no AT is connected, `adapter.is_active()` returns false and none
 of this runs. The cost is one atomic load per window per frame.
@@ -138,6 +143,10 @@ struct to the corresponding accesskit `Node` setter:
 | `value` (Numeric) | `set_numeric_value()` + min/max/step | Also adds Increment/Decrement actions if step is set |
 | `labelled_by` | resolved in `build()` | Maps widget::Id to NodeId |
 | `described_by` | resolved in `build()` | Maps widget::Id to NodeId |
+| `position_in_set` | `set_position_in_set()` | 1-based position in a list/group |
+| `size_of_set` | `set_size_of_set()` | Total items in list/group |
+| `has_popup` | `set_has_popup()` | `Listbox`, `Menu`, or `Dialog` |
+| `active_descendant` | resolved in `build()` | Maps widget::Id to NodeId, like `labelled_by` |
 
 The tree builder also infers actions from the role:
 - Button, CheckBox, RadioButton, Switch, Link, MenuItem, Tab get

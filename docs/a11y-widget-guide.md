@@ -203,9 +203,13 @@ and fields you set. You don't need to set these:
 | `value` is `Numeric` with a `step` | `Action::Increment` + `Action::Decrement` | Screen reader offers value adjustment |
 | `expanded` is set | `Action::Expand` + `Action::Collapse` | Screen reader offers open/close |
 | Role is `ComboBox` | `HasPopup::Listbox` | Screen reader knows a popup will open |
+| `has_popup` is set | HasPopup property | Screen reader knows what type of popup opens |
 | Role is `TextInput` or `MultilineTextInput` with a `label` | Placeholder property | Screen reader reads it as hint text |
 | `orientation` is set | Orientation property | Screen reader knows horizontal vs vertical |
 | `focusable()` is called | `Action::Focus` | Screen reader can move focus to the widget |
+| `position_in_set` is set | Position-in-set property | Screen reader announces "3 of 5" |
+| `size_of_set` is set | Size-of-set property | Screen reader knows total items |
+| `active_descendant` is set | Active-descendant property | Screen reader tracks highlighted item in popup |
 
 Scrollable containers also get scroll position properties, content
 clipping for off-screen items, and a ScrollBar child node.
@@ -307,6 +311,24 @@ The screen reader speaks this after the label and role. Use for help text
 or context that isn't the widget's name (e.g., "Must be at least 8
 characters" on a password field).
 
+**`position_in_set: Option<usize>`** -- The 1-based position of this
+item within a set. Used for list items, radio buttons, and tab panels.
+The screen reader announces "3 of 5." Must be paired with `size_of_set`.
+
+**`size_of_set: Option<usize>`** -- The total number of items in the
+set containing this item. Paired with `position_in_set`.
+
+**`active_descendant: Option<&widget::Id>`** -- The currently active
+child in a composite widget. Used by combobox and pick list to indicate
+which popup option is highlighted without moving real focus. The screen
+reader tracks this as virtual focus within the popup.
+
+**`has_popup: Option<HasPopup>`** -- The type of popup this widget
+triggers. Set to `HasPopup::Listbox` for dropdowns (combobox, pick list),
+`HasPopup::Menu` for menu buttons, or `HasPopup::Dialog` for buttons
+that open modal dialogs. The screen reader announces "has popup" and
+may adjust interaction mode.
+
 Use struct update syntax to set only what applies:
 
 ```rust
@@ -322,6 +344,43 @@ Accessible {
     ..Accessible::default()
 }
 ```
+
+## Popup and overlay accessibility
+
+Widgets with dropdown popups (ComboBox, PickList) need to expose their
+popup content in the accessibility tree so screen readers can navigate
+options.
+
+### Making popup options accessible
+
+The menu overlay's `operate()` method exposes each option as a ListItem
+node. Each option should have:
+- `role: Role::ListItem`
+- `label` set to the option's display text
+- `selected` indicating whether it is the highlighted option
+- `position_in_set` (1-based) and `size_of_set` for position context
+
+Screen readers announce this as "option name, 3 of 5" when the user
+navigates through options.
+
+### Active descendant pattern
+
+For popups, focus stays on the parent widget (the combobox input field).
+The `active_descendant` property tells assistive technology which popup
+option is currently highlighted. This is the standard APG combobox
+pattern -- it allows the input to remain editable while options are
+navigated with arrow keys.
+
+Set `active_descendant` on the parent widget (not on the options
+themselves) to the widget ID of the currently highlighted option.
+
+### Has-popup property
+
+Set `has_popup` on the trigger widget even when the popup is closed.
+This tells screen readers that activating the widget will open a popup,
+allowing them to adjust their interaction mode. Use `HasPopup::Listbox`
+for dropdowns, `HasPopup::Menu` for menu buttons, `HasPopup::Dialog`
+for buttons that open modals.
 
 ## Testing your widget
 
