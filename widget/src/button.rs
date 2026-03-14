@@ -201,6 +201,7 @@ where
 struct State {
     is_pressed: bool,
     is_focused: bool,
+    focus_visible: bool,
 }
 
 impl focusable::Focusable for State {
@@ -210,10 +211,12 @@ impl focusable::Focusable for State {
 
     fn focus(&mut self) {
         self.is_focused = true;
+        self.focus_visible = true;
     }
 
     fn unfocus(&mut self) {
         self.is_focused = false;
+        self.focus_visible = false;
     }
 }
 
@@ -328,10 +331,12 @@ where
                 if self.on_press.is_some() && cursor.is_over(layout.bounds()) {
                     state.is_pressed = true;
                     state.is_focused = true;
+                    state.focus_visible = false;
 
                     shell.capture_event();
                 } else {
                     state.is_focused = false;
+                    state.focus_visible = false;
                 }
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
@@ -380,7 +385,7 @@ where
 
             if cursor.is_over(layout.bounds()) && state.is_pressed {
                 Status::Pressed
-            } else if state.is_focused {
+            } else if state.focus_visible {
                 Status::Focused
             } else if cursor.is_over(layout.bounds()) {
                 Status::Hovered
@@ -852,10 +857,13 @@ mod tests {
     fn focusable_trait() {
         let mut state = State::default();
         assert!(!state.is_focused());
+        assert!(!state.focus_visible);
         state.focus();
         assert!(state.is_focused());
+        assert!(state.focus_visible);
         state.unfocus();
         assert!(!state.is_focused());
+        assert!(!state.focus_visible);
     }
 
     #[test]
@@ -863,7 +871,9 @@ mod tests {
         let mut state = State::default();
         state.focus();
         assert!(state.is_focused());
+        assert!(state.focus_visible);
         state.unfocus();
         assert!(!state.is_focused());
+        assert!(!state.focus_visible);
     }
 }

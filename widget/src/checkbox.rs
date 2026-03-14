@@ -250,6 +250,7 @@ where
 #[derive(Debug, Clone, Default)]
 struct State<P: text::Paragraph> {
     is_focused: bool,
+    focus_visible: bool,
     label: widget::text::State<P>,
 }
 
@@ -260,10 +261,12 @@ impl<P: text::Paragraph> focusable::Focusable for State<P> {
 
     fn focus(&mut self) {
         self.is_focused = true;
+        self.focus_visible = true;
     }
 
     fn unfocus(&mut self) {
         self.is_focused = false;
+        self.focus_visible = false;
     }
 }
 
@@ -350,11 +353,13 @@ where
                     && let Some(on_toggle) = &self.on_toggle
                 {
                     state.is_focused = true;
+                    state.focus_visible = false;
 
                     shell.publish((on_toggle)(!self.is_checked));
                     shell.capture_event();
                 } else {
                     state.is_focused = false;
+                    state.focus_visible = false;
                 }
             }
             Event::Keyboard(keyboard::Event::KeyPressed {
@@ -383,7 +388,7 @@ where
             } else {
                 let state = tree.state.downcast_ref::<State<Renderer::Paragraph>>();
 
-                if state.is_focused {
+                if state.focus_visible {
                     Status::Focused { is_checked }
                 } else if is_mouse_over {
                     Status::Hovered { is_checked }
@@ -855,9 +860,12 @@ mod tests {
     fn focusable_trait() {
         let mut state = TestState::default();
         assert!(!state.is_focused());
+        assert!(!state.focus_visible);
         state.focus();
         assert!(state.is_focused());
+        assert!(state.focus_visible);
         state.unfocus();
         assert!(!state.is_focused());
+        assert!(!state.focus_visible);
     }
 }

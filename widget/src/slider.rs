@@ -361,6 +361,7 @@ where
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     if let Some(cursor_position) = cursor.position_over(layout.bounds()) {
                         state.is_focused = true;
+                        state.focus_visible = false;
 
                         if state.keyboard_modifiers.command() {
                             let _ = self.default.map(change);
@@ -373,6 +374,7 @@ where
                         shell.capture_event();
                     } else {
                         state.is_focused = false;
+                        state.focus_visible = false;
                     }
                 }
                 Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
@@ -445,7 +447,7 @@ where
 
         let current_status = if state.is_dragging {
             Status::Dragged
-        } else if state.is_focused {
+        } else if state.focus_visible {
             Status::Focused
         } else if cursor.is_over(layout.bounds()) {
             Status::Hovered
@@ -591,6 +593,7 @@ where
 struct State {
     is_dragging: bool,
     is_focused: bool,
+    focus_visible: bool,
     keyboard_modifiers: keyboard::Modifiers,
 }
 
@@ -601,10 +604,12 @@ impl Focusable for State {
 
     fn focus(&mut self) {
         self.is_focused = true;
+        self.focus_visible = true;
     }
 
     fn unfocus(&mut self) {
         self.is_focused = false;
+        self.focus_visible = false;
     }
 }
 
@@ -718,10 +723,13 @@ mod tests {
     fn focusable_trait() {
         let mut state = State::default();
         assert!(!state.is_focused());
+        assert!(!state.focus_visible);
         state.focus();
         assert!(state.is_focused());
+        assert!(state.focus_visible);
         state.unfocus();
         assert!(!state.is_focused());
+        assert!(!state.focus_visible);
     }
 
     #[test]
@@ -729,6 +737,7 @@ mod tests {
         let state = State::default();
         assert!(!state.is_focused);
         assert!(!state.is_dragging);
+        assert!(!state.focus_visible);
     }
 
     #[test]
