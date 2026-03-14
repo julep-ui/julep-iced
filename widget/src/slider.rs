@@ -462,6 +462,13 @@ where
                                 change(*self.range.end());
                                 shell.capture_event();
                             }
+                            Key::Named(key::Named::Escape) => {
+                                if state.is_focused {
+                                    state.is_focused = false;
+                                    state.focus_visible = false;
+                                    shell.capture_event();
+                                }
+                            }
                             _ => (),
                         }
                     }

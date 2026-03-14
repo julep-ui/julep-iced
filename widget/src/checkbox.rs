@@ -375,6 +375,17 @@ where
                     }
                 }
             }
+            Event::Keyboard(keyboard::Event::KeyPressed {
+                key: keyboard::Key::Named(key::Named::Escape),
+                ..
+            }) => {
+                let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
+                if state.is_focused {
+                    state.is_focused = false;
+                    state.focus_visible = false;
+                    shell.capture_event();
+                }
+            }
             _ => {}
         }
 
