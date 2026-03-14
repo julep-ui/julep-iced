@@ -63,7 +63,7 @@ use crate::core::renderer;
 use crate::core::text;
 use crate::core::time::Instant;
 use crate::core::widget::operation::Operation;
-use crate::core::widget::operation::accessible::{Accessible, Role, Value};
+use crate::core::widget::operation::accessible::{Accessible, HasPopup, Role, Value};
 use crate::core::widget::{self, Widget};
 use crate::core::{Element, Event, Length, Padding, Pixels, Rectangle, Shell, Size, Theme, Vector};
 use crate::overlay::menu;
@@ -568,6 +568,7 @@ where
                 },
                 expanded: Some(is_expanded),
                 disabled: self.on_input.is_none(),
+                has_popup: Some(HasPopup::Listbox),
                 ..Accessible::default()
             },
         );

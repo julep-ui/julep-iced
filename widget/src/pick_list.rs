@@ -71,7 +71,7 @@ use crate::core::text::paragraph;
 use crate::core::text::{self, Text};
 use crate::core::touch;
 use crate::core::widget::operation::Operation;
-use crate::core::widget::operation::accessible::{Accessible, Role, Value};
+use crate::core::widget::operation::accessible::{Accessible, HasPopup, Role, Value};
 use crate::core::widget::tree::{self, Tree};
 use crate::core::window;
 use crate::core::{
@@ -448,6 +448,7 @@ where
                 value: selected_label.as_deref().map(Value::Text),
                 expanded: Some(state.is_open),
                 disabled: self.on_select.is_none(),
+                has_popup: Some(HasPopup::Listbox),
                 ..Accessible::default()
             },
         );

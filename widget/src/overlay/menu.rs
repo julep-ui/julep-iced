@@ -7,6 +7,9 @@ use crate::core::overlay;
 use crate::core::renderer;
 use crate::core::text::{self, Text};
 use crate::core::touch;
+use crate::core::widget;
+use crate::core::widget::operation::Operation;
+use crate::core::widget::operation::accessible::{Accessible, Role};
 use crate::core::widget::tree::{self, Tree};
 use crate::core::window;
 use crate::core::{
@@ -273,6 +276,15 @@ where
         })
     }
 
+    fn operate(
+        &mut self,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn widget::Operation,
+    ) {
+        Widget::operate(&mut self.list, self.tree, layout, renderer, operation);
+    }
+
     fn update(
         &mut self,
         event: &Event,
@@ -392,6 +404,45 @@ where
         };
 
         layout::Node::new(size)
+    }
+
+    fn operate(
+        &mut self,
+        _tree: &mut Tree,
+        layout: Layout<'_>,
+        _renderer: &Renderer,
+        operation: &mut dyn Operation,
+    ) {
+        operation.accessible(
+            None,
+            layout.bounds(),
+            &Accessible {
+                role: Role::List,
+                ..Accessible::default()
+            },
+        );
+
+        let total = self.options.len();
+
+        operation.traverse(&mut |operation| {
+            for (i, option) in self.options.iter().enumerate() {
+                let label = (self.to_string)(option);
+                let is_selected = *self.hovered_option == Some(i);
+
+                operation.accessible(
+                    None,
+                    layout.bounds(),
+                    &Accessible {
+                        role: Role::ListItem,
+                        label: Some(&label),
+                        selected: Some(is_selected),
+                        position_in_set: Some(i + 1),
+                        size_of_set: Some(total),
+                        ..Accessible::default()
+                    },
+                );
+            }
+        });
     }
 
     fn update(
