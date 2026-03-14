@@ -1314,6 +1314,22 @@ async fn run_instance<P>(
                                         }
                                     }
 
+                                    // Scroll the newly focused widget into view
+                                    let mut scroll_op: Box<dyn operation::Operation> = Box::new(
+                                        operation::focusable::scroll_focused_into_view::<()>(),
+                                    );
+
+                                    loop {
+                                        ui.operate(&window.renderer, scroll_op.as_mut());
+
+                                        match scroll_op.finish() {
+                                            operation::Outcome::Chain(next) => {
+                                                scroll_op = next;
+                                            }
+                                            _ => break,
+                                        }
+                                    }
+
                                     window.raw.request_redraw();
                                     continue;
                                 }
