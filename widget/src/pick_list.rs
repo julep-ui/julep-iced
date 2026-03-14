@@ -63,6 +63,7 @@
 //! ```
 use crate::core::alignment;
 use crate::core::keyboard;
+use crate::core::keyboard::key;
 use crate::core::layout;
 use crate::core::mouse;
 use crate::core::overlay;
@@ -72,6 +73,7 @@ use crate::core::text::{self, Text};
 use crate::core::touch;
 use crate::core::widget::operation::Operation;
 use crate::core::widget::operation::accessible::{Accessible, HasPopup, Role, Value};
+use crate::core::widget::operation::focusable::{self, Focusable};
 use crate::core::widget::tree::{self, Tree};
 use crate::core::window;
 use crate::core::{
@@ -436,7 +438,7 @@ where
         _renderer: &Renderer,
         operation: &mut dyn Operation,
     ) {
-        let state = tree.state.downcast_ref::<State<Renderer::Paragraph>>();
+        let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
         let selected_label = self.selected.as_ref().map(|v| (self.to_string)(v.borrow()));
 
         operation.accessible(
@@ -452,6 +454,12 @@ where
                 ..Accessible::default()
             },
         );
+
+        if self.on_select.is_some() {
+            operation.focusable(None, layout.bounds(), state);
+        } else {
+            state.unfocus();
+        }
     }
 
     fn update(
@@ -478,22 +486,34 @@ where
                         shell.publish(on_close.clone());
                     }
 
-                    shell.capture_event();
-                } else if cursor.is_over(layout.bounds()) {
-                    let selected = self.selected.as_ref().map(Borrow::borrow);
-
-                    state.is_open = true;
-                    state.hovered_option = self
-                        .options
-                        .borrow()
-                        .iter()
-                        .position(|option| Some(option) == selected);
-
-                    if let Some(on_open) = &self.on_open {
-                        shell.publish(on_open.clone());
+                    if !cursor.is_over(layout.bounds()) {
+                        state.is_focused = false;
+                        state.focus_visible = false;
                     }
 
                     shell.capture_event();
+                } else if cursor.is_over(layout.bounds()) {
+                    if self.on_select.is_some() {
+                        let selected = self.selected.as_ref().map(Borrow::borrow);
+
+                        state.is_open = true;
+                        state.is_focused = true;
+                        state.focus_visible = false;
+                        state.hovered_option = self
+                            .options
+                            .borrow()
+                            .iter()
+                            .position(|option| Some(option) == selected);
+
+                        if let Some(on_open) = &self.on_open {
+                            shell.publish(on_open.clone());
+                        }
+
+                        shell.capture_event();
+                    }
+                } else {
+                    state.is_focused = false;
+                    state.focus_visible = false;
                 }
             }
             Event::Mouse(mouse::Event::WheelScrolled {
@@ -542,6 +562,85 @@ where
                     shell.capture_event();
                 }
             }
+            Event::Keyboard(keyboard::Event::KeyPressed {
+                key: keyboard::Key::Named(named),
+                ..
+            }) => {
+                if self.on_select.is_some() && state.is_focused {
+                    if state.is_open {
+                        match named {
+                            key::Named::ArrowDown => {
+                                let options = self.options.borrow();
+                                state.hovered_option = match state.hovered_option {
+                                    Some(i) if i + 1 < options.len() => Some(i + 1),
+                                    _ => Some(0),
+                                };
+                                shell.capture_event();
+                                shell.request_redraw();
+                            }
+                            key::Named::ArrowUp => {
+                                let options = self.options.borrow();
+                                state.hovered_option = match state.hovered_option {
+                                    Some(0) | None => Some(options.len().saturating_sub(1)),
+                                    Some(i) => Some(i - 1),
+                                };
+                                shell.capture_event();
+                                shell.request_redraw();
+                            }
+                            key::Named::Enter | key::Named::Space => {
+                                if let Some(on_select) = &self.on_select
+                                    && let Some(index) = state.hovered_option
+                                {
+                                    let options = self.options.borrow();
+                                    if let Some(option) = options.get(index) {
+                                        shell.publish(on_select(option.clone()));
+                                    }
+                                }
+                                state.is_open = false;
+                                shell.capture_event();
+                                shell.request_redraw();
+                            }
+                            key::Named::Escape => {
+                                state.is_open = false;
+                                shell.capture_event();
+                                shell.request_redraw();
+                            }
+                            key::Named::Tab => {
+                                state.is_open = false;
+                            }
+                            _ => {}
+                        }
+                    } else {
+                        match named {
+                            key::Named::Space
+                            | key::Named::Enter
+                            | key::Named::ArrowDown
+                            | key::Named::ArrowUp => {
+                                let selected = self.selected.as_ref().map(Borrow::borrow);
+
+                                state.is_open = true;
+                                state.hovered_option = self
+                                    .options
+                                    .borrow()
+                                    .iter()
+                                    .position(|option| Some(option) == selected);
+
+                                if let Some(on_open) = &self.on_open {
+                                    shell.publish(on_open.clone());
+                                }
+
+                                shell.capture_event();
+                            }
+                            key::Named::Escape => {
+                                state.is_focused = false;
+                                state.focus_visible = false;
+                                shell.capture_event();
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+            }
             Event::Keyboard(keyboard::Event::ModifiersChanged(modifiers)) => {
                 state.keyboard_modifiers = *modifiers;
             }
@@ -555,6 +654,8 @@ where
                 Status::Disabled
             } else if state.is_open {
                 Status::Opened { is_hovered }
+            } else if state.focus_visible {
+                Status::Focused
             } else if is_hovered {
                 Status::Hovered
             } else {
@@ -794,6 +895,8 @@ struct State<P: text::Paragraph> {
     menu: menu::State,
     keyboard_modifiers: keyboard::Modifiers,
     is_open: bool,
+    is_focused: bool,
+    focus_visible: bool,
     hovered_option: Option<usize>,
     options: Vec<paragraph::Plain<P>>,
     placeholder: paragraph::Plain<P>,
@@ -806,6 +909,8 @@ impl<P: text::Paragraph> State<P> {
             menu: menu::State::default(),
             keyboard_modifiers: keyboard::Modifiers::default(),
             is_open: bool::default(),
+            is_focused: bool::default(),
+            focus_visible: bool::default(),
             hovered_option: Option::default(),
             options: Vec::new(),
             placeholder: paragraph::Plain::default(),
@@ -816,6 +921,22 @@ impl<P: text::Paragraph> State<P> {
 impl<P: text::Paragraph> Default for State<P> {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl<P: text::Paragraph> focusable::Focusable for State<P> {
+    fn is_focused(&self) -> bool {
+        self.is_focused
+    }
+
+    fn focus(&mut self) {
+        self.is_focused = true;
+        self.focus_visible = true;
+    }
+
+    fn unfocus(&mut self) {
+        self.is_focused = false;
+        self.focus_visible = false;
     }
 }
 
@@ -875,6 +996,8 @@ pub enum Status {
         /// Whether the [`PickList`] is hovered, while open.
         is_hovered: bool,
     },
+    /// The [`PickList`] has keyboard focus.
+    Focused,
     /// The [`PickList`] is disabled.
     Disabled,
 }
@@ -949,6 +1072,14 @@ pub fn default(theme: &Theme, status: Status) -> Style {
         Status::Hovered | Status::Opened { .. } => Style {
             border: Border {
                 color: palette.primary.strong.color,
+                ..active.border
+            },
+            ..active
+        },
+        Status::Focused => Style {
+            border: Border {
+                color: palette.primary.strong.color,
+                width: 2.0,
                 ..active.border
             },
             ..active

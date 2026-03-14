@@ -149,6 +149,11 @@ All interactive widgets respond to keyboard input when focused:
 | Slider | Home | Set to minimum |
 | Slider | End | Set to maximum |
 | Vertical Slider | Same as Slider | Same behavior |
+| PickList (closed) | Space, Enter, Arrow Down | Opens the dropdown |
+| PickList (open) | Arrow Down/Up | Navigate options (wraps) |
+| PickList (open) | Space, Enter | Select hovered option and close |
+| PickList (open) | Escape | Close dropdown, keep focus |
+| PickList (open) | Tab | Close dropdown, move focus |
 | All focusable | Escape | Unfocuses the widget |
 | All focusable | Ctrl+Tab | Move to next widget (unconditional) |
 | All focusable | Ctrl+Shift+Tab | Move to previous widget (unconditional) |
