@@ -1273,214 +1273,25 @@ async fn run_instance<P>(
                             for (event, status) in
                                 window_events.into_iter().zip(statuses.into_iter())
                             {
-                                // Ctrl+Tab always navigates focus, even if a widget
-                                // captured the event. This is the emergency exit from
-                                // any focus trap (e.g., a text editor that uses Tab
-                                // for indentation).
-                                if matches!(
-                                    &event,
-                                    core::Event::Keyboard(core::keyboard::Event::KeyPressed {
-                                        key: core::keyboard::Key::Named(
-                                            core::keyboard::key::Named::Tab,
-                                        ),
-                                        modifiers,
-                                        ..
-                                    }) if modifiers.control()
-                                ) {
-                                    let shift = matches!(
-                                        &event,
-                                        core::Event::Keyboard(
-                                            core::keyboard::Event::KeyPressed {
-                                                modifiers,
-                                                ..
-                                            }
-                                        ) if modifiers.shift()
-                                    );
-
+                                {
                                     let ui =
                                         user_interfaces.get_mut(&id).expect("Get user interface");
 
-                                    let mut op: Box<dyn operation::Operation> = if shift {
-                                        Box::new(operation::focusable::focus_previous::<()>())
-                                    } else {
-                                        Box::new(operation::focusable::focus_next::<()>())
-                                    };
-
-                                    loop {
-                                        ui.operate(&window.renderer, op.as_mut());
-
-                                        match op.finish() {
-                                            operation::Outcome::Chain(next) => {
-                                                op = next;
-                                            }
-                                            _ => break,
-                                        }
-                                    }
-
-                                    let mut scroll_op: Box<dyn operation::Operation> = Box::new(
-                                        operation::focusable::scroll_focused_into_view::<()>(),
-                                    );
-
-                                    loop {
-                                        ui.operate(&window.renderer, scroll_op.as_mut());
-
-                                        match scroll_op.finish() {
-                                            operation::Outcome::Chain(next) => {
-                                                scroll_op = next;
-                                            }
-                                            _ => break,
-                                        }
-                                    }
-
-                                    window.raw.request_redraw();
-                                    continue;
-                                }
-
-                                // Framework handles uncaptured Tab for focus navigation
-                                if matches!(
-                                    &event,
-                                    core::Event::Keyboard(core::keyboard::Event::KeyPressed {
-                                        key: core::keyboard::Key::Named(
-                                            core::keyboard::key::Named::Tab,
-                                        ),
-                                        ..
-                                    })
-                                ) && status == core::event::Status::Ignored
-                                {
-                                    let shift = matches!(
+                                    if runtime::keyboard::handle_ctrl_tab(
                                         &event,
-                                        core::Event::Keyboard(
-                                            core::keyboard::Event::KeyPressed {
-                                                modifiers,
-                                                ..
-                                            }
-                                        ) if modifiers.shift()
-                                    );
-
-                                    let ui =
-                                        user_interfaces.get_mut(&id).expect("Get user interface");
-
-                                    let mut op: Box<dyn operation::Operation> = if shift {
-                                        Box::new(operation::focusable::focus_previous::<()>())
-                                    } else {
-                                        Box::new(operation::focusable::focus_next::<()>())
-                                    };
-
-                                    loop {
-                                        ui.operate(&window.renderer, op.as_mut());
-
-                                        match op.finish() {
-                                            operation::Outcome::Chain(next) => {
-                                                op = next;
-                                            }
-                                            _ => break,
-                                        }
-                                    }
-
-                                    // Scroll the newly focused widget into view
-                                    let mut scroll_op: Box<dyn operation::Operation> = Box::new(
-                                        operation::focusable::scroll_focused_into_view::<()>(),
-                                    );
-
-                                    loop {
-                                        ui.operate(&window.renderer, scroll_op.as_mut());
-
-                                        match scroll_op.finish() {
-                                            operation::Outcome::Chain(next) => {
-                                                scroll_op = next;
-                                            }
-                                            _ => break,
-                                        }
-                                    }
-
-                                    window.raw.request_redraw();
-                                    continue;
-                                }
-
-                                // Framework scrolls the focused widget's ancestor
-                                // scrollable when scroll keys are uncaptured
-                                if let core::Event::Keyboard(core::keyboard::Event::KeyPressed {
-                                    key: core::keyboard::Key::Named(named),
-                                    modifiers,
-                                    ..
-                                }) = &event
-                                {
-                                    use operation::focusable::ScrollAction;
-
-                                    let action = match named {
-                                        core::keyboard::key::Named::PageDown
-                                            if modifiers.shift() =>
-                                        {
-                                            Some(ScrollAction::PageRight)
-                                        }
-                                        core::keyboard::key::Named::PageDown => {
-                                            Some(ScrollAction::PageDown)
-                                        }
-                                        core::keyboard::key::Named::PageUp if modifiers.shift() => {
-                                            Some(ScrollAction::PageLeft)
-                                        }
-                                        core::keyboard::key::Named::PageUp => {
-                                            Some(ScrollAction::PageUp)
-                                        }
-                                        core::keyboard::key::Named::ArrowDown
-                                            if modifiers.shift() =>
-                                        {
-                                            Some(ScrollAction::LineRight)
-                                        }
-                                        core::keyboard::key::Named::ArrowDown => {
-                                            Some(ScrollAction::LineDown)
-                                        }
-                                        core::keyboard::key::Named::ArrowUp
-                                            if modifiers.shift() =>
-                                        {
-                                            Some(ScrollAction::LineLeft)
-                                        }
-                                        core::keyboard::key::Named::ArrowUp => {
-                                            Some(ScrollAction::LineUp)
-                                        }
-                                        core::keyboard::key::Named::ArrowRight => {
-                                            Some(ScrollAction::LineRight)
-                                        }
-                                        core::keyboard::key::Named::ArrowLeft => {
-                                            Some(ScrollAction::LineLeft)
-                                        }
-                                        core::keyboard::key::Named::Home if modifiers.shift() => {
-                                            Some(ScrollAction::ShiftHome)
-                                        }
-                                        core::keyboard::key::Named::Home => {
-                                            Some(ScrollAction::Home)
-                                        }
-                                        core::keyboard::key::Named::End if modifiers.shift() => {
-                                            Some(ScrollAction::ShiftEnd)
-                                        }
-                                        core::keyboard::key::Named::End => Some(ScrollAction::End),
-                                        _ => None,
-                                    };
-
-                                    if let Some(action) = action
-                                        && status == core::event::Status::Ignored
-                                    {
-                                        let ui = user_interfaces
-                                            .get_mut(&id)
-                                            .expect("Get user interface");
-
-                                        let mut op: Box<dyn operation::Operation> = Box::new(
-                                            operation::focusable::scroll_focused_ancestor::<()>(
-                                                action,
-                                            ),
-                                        );
-
-                                        loop {
-                                            ui.operate(&window.renderer, op.as_mut());
-
-                                            match op.finish() {
-                                                operation::Outcome::Chain(next) => {
-                                                    op = next;
-                                                }
-                                                _ => break,
-                                            }
-                                        }
-
+                                        ui,
+                                        &window.renderer,
+                                    ) || runtime::keyboard::handle_tab(
+                                        &event,
+                                        status,
+                                        ui,
+                                        &window.renderer,
+                                    ) || runtime::keyboard::handle_scroll_keys(
+                                        &event,
+                                        status,
+                                        ui,
+                                        &window.renderer,
+                                    ) {
                                         window.raw.request_redraw();
                                         continue;
                                     }
