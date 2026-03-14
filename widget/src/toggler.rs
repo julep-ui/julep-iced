@@ -32,6 +32,8 @@
 //! ```
 use crate::core::alignment;
 use crate::core::border;
+use crate::core::keyboard;
+use crate::core::keyboard::key;
 use crate::core::layout;
 use crate::core::mouse;
 use crate::core::renderer;
@@ -39,6 +41,7 @@ use crate::core::text;
 use crate::core::touch;
 use crate::core::widget;
 use crate::core::widget::operation::accessible::{Accessible, Role};
+use crate::core::widget::operation::focusable::{self, Focusable};
 use crate::core::widget::tree::{self, Tree};
 use crate::core::window;
 use crate::core::{
@@ -233,6 +236,26 @@ where
     }
 }
 
+#[derive(Debug, Clone, Default)]
+struct State<P: text::Paragraph> {
+    is_focused: bool,
+    label: widget::text::State<P>,
+}
+
+impl<P: text::Paragraph> focusable::Focusable for State<P> {
+    fn is_focused(&self) -> bool {
+        self.is_focused
+    }
+
+    fn focus(&mut self) {
+        self.is_focused = true;
+    }
+
+    fn unfocus(&mut self) {
+        self.is_focused = false;
+    }
+}
+
 impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Toggler<'_, Message, Theme, Renderer>
 where
@@ -240,11 +263,11 @@ where
     Renderer: text::Renderer,
 {
     fn tag(&self) -> tree::Tag {
-        tree::Tag::of::<widget::text::State<Renderer::Paragraph>>()
+        tree::Tag::of::<State<Renderer::Paragraph>>()
     }
 
     fn state(&self) -> tree::State {
-        tree::State::new(widget::text::State::<Renderer::Paragraph>::default())
+        tree::State::new(State::<Renderer::Paragraph>::default())
     }
 
     fn size(&self) -> Size<Length> {
@@ -282,12 +305,10 @@ where
             },
             |limits| {
                 if let Some(label) = self.label.as_deref() {
-                    let state = tree
-                        .state
-                        .downcast_mut::<widget::text::State<Renderer::Paragraph>>();
+                    let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
 
                     widget::text::layout(
-                        state,
+                        &mut state.label,
                         renderer,
                         limits,
                         label,
@@ -313,11 +334,13 @@ where
 
     fn operate(
         &mut self,
-        _tree: &mut Tree,
+        tree: &mut Tree,
         layout: Layout<'_>,
         _renderer: &Renderer,
         operation: &mut dyn widget::Operation,
     ) {
+        let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
+
         operation.accessible(
             None,
             layout.bounds(),
@@ -329,11 +352,17 @@ where
                 ..Accessible::default()
             },
         );
+
+        if self.on_toggle.is_some() {
+            operation.focusable(None, layout.bounds(), state);
+        } else {
+            state.unfocus();
+        }
     }
 
     fn update(
         &mut self,
-        _tree: &mut Tree,
+        tree: &mut Tree,
         event: &Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
@@ -351,6 +380,21 @@ where
                 let mouse_over = cursor.is_over(layout.bounds());
 
                 if mouse_over {
+                    let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
+
+                    state.is_focused = true;
+
+                    shell.publish(on_toggle(!self.is_toggled));
+                    shell.capture_event();
+                }
+            }
+            Event::Keyboard(keyboard::Event::KeyPressed {
+                key: keyboard::Key::Named(key::Named::Space),
+                ..
+            }) => {
+                let state = tree.state.downcast_ref::<State<Renderer::Paragraph>>();
+
+                if state.is_focused {
                     shell.publish(on_toggle(!self.is_toggled));
                     shell.capture_event();
                 }
@@ -362,13 +406,21 @@ where
             Status::Disabled {
                 is_toggled: self.is_toggled,
             }
-        } else if cursor.is_over(layout.bounds()) {
-            Status::Hovered {
-                is_toggled: self.is_toggled,
-            }
         } else {
-            Status::Active {
-                is_toggled: self.is_toggled,
+            let state = tree.state.downcast_ref::<State<Renderer::Paragraph>>();
+
+            if state.is_focused {
+                Status::Focused {
+                    is_toggled: self.is_toggled,
+                }
+            } else if cursor.is_over(layout.bounds()) {
+                Status::Hovered {
+                    is_toggled: self.is_toggled,
+                }
+            } else {
+                Status::Active {
+                    is_toggled: self.is_toggled,
+                }
             }
         };
 
@@ -423,13 +475,13 @@ where
 
         if self.label.is_some() {
             let label_layout = children.next().unwrap();
-            let state: &widget::text::State<Renderer::Paragraph> = tree.state.downcast_ref();
+            let state: &State<Renderer::Paragraph> = tree.state.downcast_ref();
 
             crate::text::draw(
                 renderer,
                 defaults,
                 label_layout.bounds(),
-                state.raw(),
+                state.label.raw(),
                 crate::text::Style {
                     color: style.text_color,
                 },
@@ -522,6 +574,11 @@ pub enum Status {
         /// Indicates whether the [`Toggler`] is toggled.
         is_toggled: bool,
     },
+    /// The [`Toggler`] has keyboard focus.
+    Focused {
+        /// Indicates whether the [`Toggler`] is toggled.
+        is_toggled: bool,
+    },
     /// The [`Toggler`] is disabled.
     Disabled {
         /// Indicates whether the [`Toggler`] is toggled.
@@ -588,7 +645,9 @@ pub fn default(theme: &Theme, status: Status) -> Style {
     let palette = theme.palette();
 
     let background = match status {
-        Status::Active { is_toggled } | Status::Hovered { is_toggled } => {
+        Status::Active { is_toggled }
+        | Status::Hovered { is_toggled }
+        | Status::Focused { is_toggled } => {
             if is_toggled {
                 palette.primary.base.color
             } else {
@@ -605,7 +664,7 @@ pub fn default(theme: &Theme, status: Status) -> Style {
     };
 
     let foreground = match status {
-        Status::Active { is_toggled } => {
+        Status::Active { is_toggled } | Status::Focused { is_toggled } => {
             if is_toggled {
                 palette.primary.base.text
             } else {
@@ -625,13 +684,18 @@ pub fn default(theme: &Theme, status: Status) -> Style {
         Status::Disabled { .. } => palette.background.weakest.color,
     };
 
+    let (background_border_width, background_border_color) = match status {
+        Status::Focused { .. } => (2.0, palette.primary.strong.color),
+        _ => (0.0, Color::TRANSPARENT),
+    };
+
     Style {
         background: background.into(),
         foreground: foreground.into(),
         foreground_border_width: 0.0,
         foreground_border_color: Color::TRANSPARENT,
-        background_border_width: 0.0,
-        background_border_color: Color::TRANSPARENT,
+        background_border_width,
+        background_border_color,
         text_color: None,
         border_radius: None,
         padding_ratio: 0.1,

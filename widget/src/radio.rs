@@ -58,6 +58,8 @@
 //! ```
 use crate::core::alignment;
 use crate::core::border::{self, Border};
+use crate::core::keyboard;
+use crate::core::keyboard::key;
 use crate::core::layout;
 use crate::core::mouse;
 use crate::core::renderer;
@@ -65,6 +67,7 @@ use crate::core::text;
 use crate::core::touch;
 use crate::core::widget;
 use crate::core::widget::operation::accessible::{Accessible, Role};
+use crate::core::widget::operation::focusable::Focusable;
 use crate::core::widget::tree::{self, Tree};
 use crate::core::window;
 use crate::core::{
@@ -259,6 +262,26 @@ where
     }
 }
 
+#[derive(Debug, Clone, Default)]
+struct State<P: text::Paragraph> {
+    is_focused: bool,
+    label: widget::text::State<P>,
+}
+
+impl<P: text::Paragraph> Focusable for State<P> {
+    fn is_focused(&self) -> bool {
+        self.is_focused
+    }
+
+    fn focus(&mut self) {
+        self.is_focused = true;
+    }
+
+    fn unfocus(&mut self) {
+        self.is_focused = false;
+    }
+}
+
 impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Radio<'_, Message, Theme, Renderer>
 where
@@ -267,11 +290,11 @@ where
     Renderer: text::Renderer,
 {
     fn tag(&self) -> tree::Tag {
-        tree::Tag::of::<widget::text::State<Renderer::Paragraph>>()
+        tree::Tag::of::<State<Renderer::Paragraph>>()
     }
 
     fn state(&self) -> tree::State {
-        tree::State::new(widget::text::State::<Renderer::Paragraph>::default())
+        tree::State::new(State::<Renderer::Paragraph>::default())
     }
 
     fn size(&self) -> Size<Length> {
@@ -292,12 +315,10 @@ where
             self.spacing,
             |_| layout::Node::new(Size::new(self.size, self.size)),
             |limits| {
-                let state = tree
-                    .state
-                    .downcast_mut::<widget::text::State<Renderer::Paragraph>>();
+                let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
 
                 widget::text::layout(
-                    state,
+                    &mut state.label,
                     renderer,
                     limits,
                     &self.label,
@@ -320,11 +341,13 @@ where
 
     fn operate(
         &mut self,
-        _tree: &mut Tree,
+        tree: &mut Tree,
         layout: Layout<'_>,
         _renderer: &Renderer,
         operation: &mut dyn widget::Operation,
     ) {
+        let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
+
         operation.accessible(
             None,
             layout.bounds(),
@@ -335,11 +358,13 @@ where
                 ..Accessible::default()
             },
         );
+
+        operation.focusable(None, layout.bounds(), state);
     }
 
     fn update(
         &mut self,
-        _tree: &mut Tree,
+        tree: &mut Tree,
         event: &Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
@@ -351,6 +376,21 @@ where
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
                 if cursor.is_over(layout.bounds()) {
+                    let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
+
+                    state.is_focused = true;
+
+                    shell.publish(self.on_click.clone());
+                    shell.capture_event();
+                }
+            }
+            Event::Keyboard(keyboard::Event::KeyPressed {
+                key: keyboard::Key::Named(key::Named::Space),
+                ..
+            }) => {
+                let state = tree.state.downcast_ref::<State<Renderer::Paragraph>>();
+
+                if state.is_focused {
                     shell.publish(self.on_click.clone());
                     shell.capture_event();
                 }
@@ -359,10 +399,13 @@ where
         }
 
         let current_status = {
+            let state = tree.state.downcast_ref::<State<Renderer::Paragraph>>();
             let is_mouse_over = cursor.is_over(layout.bounds());
             let is_selected = self.is_selected;
 
-            if is_mouse_over {
+            if state.is_focused {
+                Status::Focused { is_selected }
+            } else if is_mouse_over {
                 Status::Hovered { is_selected }
             } else {
                 Status::Active { is_selected }
@@ -452,13 +495,13 @@ where
 
         {
             let label_layout = children.next().unwrap();
-            let state: &widget::text::State<Renderer::Paragraph> = tree.state.downcast_ref();
+            let state: &State<Renderer::Paragraph> = tree.state.downcast_ref();
 
             crate::text::draw(
                 renderer,
                 defaults,
                 label_layout.bounds(),
-                state.raw(),
+                state.label.raw(),
                 crate::text::Style {
                     color: style.text_color,
                 },
@@ -490,6 +533,11 @@ pub enum Status {
     },
     /// The [`Radio`] button is being hovered.
     Hovered {
+        /// Indicates whether the [`Radio`] button is currently selected.
+        is_selected: bool,
+    },
+    /// The [`Radio`] button has keyboard focus.
+    Focused {
         /// Indicates whether the [`Radio`] button is currently selected.
         is_selected: bool,
     },
@@ -554,6 +602,11 @@ pub fn default(theme: &Theme, status: Status) -> Style {
         Status::Hovered { .. } => Style {
             dot_color: palette.primary.strong.color,
             background: palette.primary.weak.color.into(),
+            ..active
+        },
+        Status::Focused { .. } => Style {
+            border_color: palette.primary.strong.color,
+            border_width: 2.0,
             ..active
         },
     }

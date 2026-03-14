@@ -32,6 +32,8 @@
 //! ```
 //! ![Checkbox drawn by `iced_wgpu`](https://github.com/iced-rs/iced/blob/7760618fb112074bc40b148944521f312152012a/docs/images/checkbox.png?raw=true)
 use crate::core::alignment;
+use crate::core::keyboard;
+use crate::core::keyboard::key;
 use crate::core::layout;
 use crate::core::mouse;
 use crate::core::renderer;
@@ -40,6 +42,7 @@ use crate::core::theme::palette;
 use crate::core::touch;
 use crate::core::widget;
 use crate::core::widget::operation::accessible::{Accessible, Role};
+use crate::core::widget::operation::focusable::{self, Focusable};
 use crate::core::widget::tree::{self, Tree};
 use crate::core::window;
 use crate::core::{
@@ -244,6 +247,26 @@ where
     }
 }
 
+#[derive(Debug, Clone, Default)]
+struct State<P: text::Paragraph> {
+    is_focused: bool,
+    label: widget::text::State<P>,
+}
+
+impl<P: text::Paragraph> focusable::Focusable for State<P> {
+    fn is_focused(&self) -> bool {
+        self.is_focused
+    }
+
+    fn focus(&mut self) {
+        self.is_focused = true;
+    }
+
+    fn unfocus(&mut self) {
+        self.is_focused = false;
+    }
+}
+
 impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Checkbox<'_, Message, Theme, Renderer>
 where
@@ -251,11 +274,11 @@ where
     Theme: Catalog,
 {
     fn tag(&self) -> tree::Tag {
-        tree::Tag::of::<widget::text::State<Renderer::Paragraph>>()
+        tree::Tag::of::<State<Renderer::Paragraph>>()
     }
 
     fn state(&self) -> tree::State {
-        tree::State::new(widget::text::State::<Renderer::Paragraph>::default())
+        tree::State::new(State::<Renderer::Paragraph>::default())
     }
 
     fn size(&self) -> Size<Length> {
@@ -281,12 +304,10 @@ where
             |_| layout::Node::new(Size::new(self.size, self.size)),
             |limits| {
                 if let Some(label) = self.label.as_deref() {
-                    let state = tree
-                        .state
-                        .downcast_mut::<widget::text::State<Renderer::Paragraph>>();
+                    let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
 
                     widget::text::layout(
-                        state,
+                        &mut state.label,
                         renderer,
                         limits,
                         label,
@@ -312,7 +333,7 @@ where
 
     fn update(
         &mut self,
-        _tree: &mut Tree,
+        tree: &mut Tree,
         event: &Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
@@ -326,8 +347,25 @@ where
                 let mouse_over = cursor.is_over(layout.bounds());
 
                 if mouse_over && let Some(on_toggle) = &self.on_toggle {
+                    let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
+
+                    state.is_focused = true;
+
                     shell.publish((on_toggle)(!self.is_checked));
                     shell.capture_event();
+                }
+            }
+            Event::Keyboard(keyboard::Event::KeyPressed {
+                key: keyboard::Key::Named(key::Named::Space),
+                ..
+            }) => {
+                if let Some(on_toggle) = &self.on_toggle {
+                    let state = tree.state.downcast_ref::<State<Renderer::Paragraph>>();
+
+                    if state.is_focused {
+                        shell.publish((on_toggle)(!self.is_checked));
+                        shell.capture_event();
+                    }
                 }
             }
             _ => {}
@@ -340,10 +378,16 @@ where
 
             if is_disabled {
                 Status::Disabled { is_checked }
-            } else if is_mouse_over {
-                Status::Hovered { is_checked }
             } else {
-                Status::Active { is_checked }
+                let state = tree.state.downcast_ref::<State<Renderer::Paragraph>>();
+
+                if state.is_focused {
+                    Status::Focused { is_checked }
+                } else if is_mouse_over {
+                    Status::Hovered { is_checked }
+                } else {
+                    Status::Active { is_checked }
+                }
             }
         };
 
@@ -441,13 +485,13 @@ where
 
         {
             let label_layout = children.next().unwrap();
-            let state: &widget::text::State<Renderer::Paragraph> = tree.state.downcast_ref();
+            let state: &State<Renderer::Paragraph> = tree.state.downcast_ref();
 
             crate::text::draw(
                 renderer,
                 defaults,
                 label_layout.bounds(),
-                state.raw(),
+                state.label.raw(),
                 crate::text::Style {
                     color: style.text_color,
                 },
@@ -458,11 +502,13 @@ where
 
     fn operate(
         &mut self,
-        _tree: &mut Tree,
+        tree: &mut Tree,
         layout: Layout<'_>,
         _renderer: &Renderer,
         operation: &mut dyn widget::Operation,
     ) {
+        let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
+
         operation.accessible(
             None,
             layout.bounds(),
@@ -474,6 +520,13 @@ where
                 ..Accessible::default()
             },
         );
+
+        if self.on_toggle.is_some() {
+            operation.focusable(None, layout.bounds(), state);
+        } else {
+            state.unfocus();
+        }
+
         if let Some(label) = self.label.as_deref() {
             operation.text(None, layout.bounds(), label);
         }
@@ -519,6 +572,11 @@ pub enum Status {
     },
     /// The [`Checkbox`] can be interacted with and it is being hovered.
     Hovered {
+        /// Indicates if the [`Checkbox`] is currently checked.
+        is_checked: bool,
+    },
+    /// The [`Checkbox`] has keyboard focus.
+    Focused {
         /// Indicates if the [`Checkbox`] is currently checked.
         is_checked: bool,
     },
@@ -590,6 +648,24 @@ pub fn primary(theme: &Theme, status: Status) -> Style {
             palette.primary.strong,
             is_checked,
         ),
+        Status::Focused { is_checked } => {
+            let base = styled(
+                palette.background.strong.color,
+                palette.background.base,
+                palette.primary.base.text,
+                palette.primary.base,
+                is_checked,
+            );
+
+            Style {
+                border: Border {
+                    color: palette.primary.strong.color,
+                    width: 2.0,
+                    ..base.border
+                },
+                ..base
+            }
+        }
         Status::Disabled { is_checked } => styled(
             palette.background.weak.color,
             palette.background.weaker,
@@ -619,6 +695,24 @@ pub fn secondary(theme: &Theme, status: Status) -> Style {
             palette.background.strong,
             is_checked,
         ),
+        Status::Focused { is_checked } => {
+            let base = styled(
+                palette.background.strong.color,
+                palette.background.base,
+                palette.background.base.text,
+                palette.background.strong,
+                is_checked,
+            );
+
+            Style {
+                border: Border {
+                    color: palette.primary.strong.color,
+                    width: 2.0,
+                    ..base.border
+                },
+                ..base
+            }
+        }
         Status::Disabled { is_checked } => styled(
             palette.background.weak.color,
             palette.background.weak,
@@ -648,6 +742,24 @@ pub fn success(theme: &Theme, status: Status) -> Style {
             palette.success.strong,
             is_checked,
         ),
+        Status::Focused { is_checked } => {
+            let base = styled(
+                palette.background.weak.color,
+                palette.background.base,
+                palette.success.base.text,
+                palette.success.base,
+                is_checked,
+            );
+
+            Style {
+                border: Border {
+                    color: palette.primary.strong.color,
+                    width: 2.0,
+                    ..base.border
+                },
+                ..base
+            }
+        }
         Status::Disabled { is_checked } => styled(
             palette.background.weak.color,
             palette.background.weak,
@@ -677,6 +789,24 @@ pub fn danger(theme: &Theme, status: Status) -> Style {
             palette.danger.strong,
             is_checked,
         ),
+        Status::Focused { is_checked } => {
+            let base = styled(
+                palette.background.strong.color,
+                palette.background.base,
+                palette.danger.base.text,
+                palette.danger.base,
+                is_checked,
+            );
+
+            Style {
+                border: Border {
+                    color: palette.primary.strong.color,
+                    width: 2.0,
+                    ..base.border
+                },
+                ..base
+            }
+        }
         Status::Disabled { is_checked } => styled(
             palette.background.weak.color,
             palette.background.weak,
