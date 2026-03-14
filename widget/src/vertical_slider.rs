@@ -375,6 +375,28 @@ where
             T::from_f64(new_value)
         };
 
+        let page_increment = |value: T| -> Option<T> {
+            let step = self.step.into() * 10.0;
+            let new_value = value.into() + step;
+
+            if new_value > (*self.range.end()).into() {
+                return Some(*self.range.end());
+            }
+
+            T::from_f64(new_value)
+        };
+
+        let page_decrement = |value: T| -> Option<T> {
+            let step = self.step.into() * 10.0;
+            let new_value = value.into() - step;
+
+            if new_value < (*self.range.start()).into() {
+                return Some(*self.range.start());
+            }
+
+            T::from_f64(new_value)
+        };
+
         let mut change = |new_value: T| {
             if (self.value.into() - new_value.into()).abs() > f64::EPSILON {
                 shell.publish((self.on_change)(new_value));
@@ -449,6 +471,14 @@ where
                         }
                         Key::Named(key::Named::ArrowDown | key::Named::ArrowLeft) => {
                             let _ = decrement(current_value).map(change);
+                            shell.capture_event();
+                        }
+                        Key::Named(key::Named::PageUp) => {
+                            let _ = page_increment(current_value).map(change);
+                            shell.capture_event();
+                        }
+                        Key::Named(key::Named::PageDown) => {
+                            let _ = page_decrement(current_value).map(change);
                             shell.capture_event();
                         }
                         Key::Named(key::Named::Home) => {
