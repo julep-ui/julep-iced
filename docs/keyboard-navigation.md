@@ -218,6 +218,12 @@ scrolling and provides precise control for mouse+keyboard users.
 
 Supported keys: Page Up/Down, Arrow Up/Down/Left/Right, Home, End.
 
+**Shift swaps the scroll axis** from vertical to horizontal, matching
+how Shift+wheel works. Shift+Page Down scrolls right by viewport
+width. Shift+Arrow Down scrolls right by line. Shift+Home scrolls
+to the horizontal start, Shift+End to the horizontal end. This
+applies to both the cursor-over handler and the framework handler.
+
 Home and End are direction-aware: for vertical scrollables, they
 scroll to the top and bottom. For horizontal-only scrollables, they
 scroll to the left and right edges.
@@ -285,6 +291,26 @@ chase the button's deep layout position. With the cascade, the inner
 scrollable scrolls to show the button, and the outer scrollable
 scrolls just enough to show the inner scrollable's viewport area.
 Both are properly framed, and the button is visible.
+
+---
+
+## Custom event loops
+
+Applications that use a custom event loop (like the integration
+example) bypass the framework's built-in keyboard handling. The
+keyboard navigation logic is available as standalone functions in
+`runtime::keyboard`:
+
+- `handle_ctrl_tab(event, ui, renderer)` -- unconditional focus nav
+- `handle_tab(event, status, ui, renderer)` -- uncaptured Tab nav
+- `handle_scroll_keys(event, status, ui, renderer)` -- scroll keys
+
+Call these after `interface.update()` returns, passing each event
+and its capture status. Each function returns `true` if it consumed
+the event. Backend-specific concerns (requesting redraws, suppressing
+events from subscriptions) are handled by the caller.
+
+The integration example demonstrates this pattern.
 
 ---
 
