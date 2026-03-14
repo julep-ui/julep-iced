@@ -31,6 +31,7 @@ use crate::core::overlay;
 use crate::core::renderer;
 use crate::core::text;
 use crate::core::time::{Duration, Instant};
+use crate::core::widget::operation::Focusable;
 use crate::core::widget::{self, Widget};
 use crate::core::window;
 use crate::core::{Element, Event, Length, Padding, Pixels, Point, Rectangle, Shell, Size, Vector};
@@ -205,47 +206,50 @@ where
             let now = Instant::now();
             let cursor_position = cursor.position_over(layout.bounds());
 
-            match (*state, cursor_position) {
-                (State::Idle, Some(cursor_position)) => {
+            match (state.interaction, cursor_position) {
+                (Interaction::Idle, Some(cursor_position)) => {
                     if self.delay == Duration::ZERO {
-                        *state = State::Open { cursor_position };
+                        state.interaction = Interaction::Open { cursor_position };
                         shell.invalidate_layout();
                     } else {
-                        *state = State::Hovered { at: now };
+                        state.interaction = Interaction::Hovered { at: now };
                     }
 
                     shell.request_redraw_at(now + self.delay);
                 }
-                (State::Hovered { .. }, None) => {
-                    *state = State::Idle;
+                (Interaction::Hovered { .. }, None) => {
+                    state.interaction = Interaction::Idle;
                 }
-                (State::Hovered { at, .. }, _) if at.elapsed() < self.delay => {
+                (Interaction::Hovered { at, .. }, _) if at.elapsed() < self.delay => {
                     shell.request_redraw_at(now + self.delay - at.elapsed());
                 }
-                (State::Hovered { .. }, Some(cursor_position)) => {
-                    *state = State::Open { cursor_position };
+                (Interaction::Hovered { .. }, Some(cursor_position)) => {
+                    state.interaction = Interaction::Open { cursor_position };
                     shell.invalidate_layout();
                 }
                 (
-                    State::Open {
+                    Interaction::Open {
                         cursor_position: last_position,
                     },
                     Some(cursor_position),
                 ) if self.position == Position::FollowCursor
                     && last_position != cursor_position =>
                 {
-                    *state = State::Open { cursor_position };
+                    state.interaction = Interaction::Open { cursor_position };
                     shell.request_redraw();
                 }
-                (State::Open { .. }, None) => {
-                    *state = State::Idle;
-                    shell.invalidate_layout();
+                (Interaction::Open { .. }, None) => {
+                    // Only close if child is not focused
+                    if !state.child_focused {
+                        state.interaction = Interaction::Idle;
+                        shell.invalidate_layout();
 
-                    if !matches!(event, Event::Window(window::Event::RedrawRequested(_)),) {
-                        shell.request_redraw();
+                        if !matches!(event, Event::Window(window::Event::RedrawRequested(_)),) {
+                            shell.request_redraw();
+                        }
                     }
                 }
-                (State::Open { .. }, Some(_)) | (State::Idle, None) => (),
+                (Interaction::Open { .. }, Some(_)) | (Interaction::Idle, None) => (),
             }
         }
 
@@ -318,7 +322,19 @@ where
             translation,
         );
 
-        let tooltip = if let State::Open { cursor_position } = *state {
+        // Show the tooltip when the child is hovered (Open state) OR when
+        // the child has keyboard focus. For focus-triggered display, anchor
+        // the tooltip to the centre of the child widget.
+        let show_cursor = match state.interaction {
+            Interaction::Open { cursor_position } => Some(cursor_position),
+            _ if state.child_focused => {
+                let bounds = layout.bounds();
+                Some(bounds.center())
+            }
+            _ => None,
+        };
+
+        let tooltip = if let Some(cursor_position) = show_cursor {
             Some(overlay::Element::new(Box::new(Overlay {
                 position: layout.position() + translation,
                 tooltip: &mut self.tooltip,
@@ -361,6 +377,20 @@ where
                 operation,
             );
         });
+
+        // After the main operation (which may have changed focus), check
+        // whether any focusable child is currently focused and update our
+        // state so overlay() can show the tooltip for keyboard users.
+        let mut focus_check = FocusCheck(false);
+        self.content.as_widget_mut().operate(
+            &mut tree.children[0],
+            layout,
+            renderer,
+            &mut focus_check,
+        );
+
+        let state = tree.state.downcast_mut::<State>();
+        state.child_focused = focus_check.0;
     }
 }
 
@@ -395,7 +425,7 @@ pub enum Position {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
-enum State {
+enum Interaction {
     #[default]
     Idle,
     Hovered {
@@ -404,6 +434,34 @@ enum State {
     Open {
         cursor_position: Point,
     },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+struct State {
+    interaction: Interaction,
+    child_focused: bool,
+}
+
+/// A lightweight operation that checks whether any focusable child widget
+/// currently holds focus. Used by the tooltip to decide whether to show
+/// itself for keyboard-only users.
+struct FocusCheck(bool);
+
+impl widget::Operation for FocusCheck {
+    fn focusable(
+        &mut self,
+        _id: Option<&widget::Id>,
+        _bounds: Rectangle,
+        state: &mut dyn Focusable,
+    ) {
+        if state.is_focused() {
+            self.0 = true;
+        }
+    }
+
+    fn traverse(&mut self, operate: &mut dyn FnMut(&mut dyn widget::Operation)) {
+        operate(self);
+    }
 }
 
 struct Overlay<'a, 'b, Message, Theme, Renderer>
