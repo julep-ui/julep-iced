@@ -344,7 +344,25 @@ pub fn main() -> Result<(), winit::error::EventLoopError> {
 
                 let mut messages = Vec::new();
 
-                let _ = interface.update(events, *cursor, renderer, &mut messages);
+                let (_state, statuses) = interface.update(events, *cursor, renderer, &mut messages);
+
+                for (event, status) in events.iter().zip(statuses.iter()) {
+                    let _ = iced_winit::runtime::keyboard::handle_ctrl_tab(
+                        event,
+                        &mut interface,
+                        renderer,
+                    ) || iced_winit::runtime::keyboard::handle_tab(
+                        event,
+                        *status,
+                        &mut interface,
+                        renderer,
+                    ) || iced_winit::runtime::keyboard::handle_scroll_keys(
+                        event,
+                        *status,
+                        &mut interface,
+                        renderer,
+                    );
+                }
 
                 events.clear();
                 *cache = interface.into_cache();
