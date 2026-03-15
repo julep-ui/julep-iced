@@ -367,12 +367,24 @@ where
                 ..
             }) => {
                 if let Some(on_press) = &self.on_press {
-                    let state = tree.state.downcast_ref::<State>();
+                    let state = tree.state.downcast_mut::<State>();
 
                     if state.is_focused {
+                        state.is_pressed = true;
                         shell.publish(on_press.get());
                         shell.capture_event();
                     }
+                }
+            }
+            Event::Keyboard(keyboard::Event::KeyReleased {
+                key: keyboard::Key::Named(key::Named::Space | key::Named::Enter),
+                ..
+            }) => {
+                let state = tree.state.downcast_mut::<State>();
+
+                if state.is_pressed && state.is_focused {
+                    state.is_pressed = false;
+                    shell.capture_event();
                 }
             }
             Event::Keyboard(keyboard::Event::KeyPressed {
@@ -394,7 +406,7 @@ where
         } else {
             let state = tree.state.downcast_ref::<State>();
 
-            if cursor.is_over(layout.bounds()) && state.is_pressed {
+            if state.is_pressed {
                 Status::Pressed
             } else if state.focus_visible {
                 Status::Focused
