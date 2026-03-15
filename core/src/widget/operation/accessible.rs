@@ -217,4 +217,33 @@ pub struct Accessible<'a> {
     /// Set on each radio button in a group so assistive technology
     /// knows which buttons belong together.
     pub radio_group: Option<&'a [widget::Id]>,
+    /// Whether the widget's value is invalid (form validation).
+    pub invalid: bool,
+    /// A widget that describes why the value is invalid.
+    ///
+    /// Points to a separate widget containing the error text. The
+    /// screen reader announces the error when the user navigates to
+    /// the invalid field.
+    pub error_message: Option<&'a widget::Id>,
+    /// Whether the widget is read-only (viewable but not editable).
+    ///
+    /// Distinct from disabled: read-only widgets are navigable and
+    /// their values can be selected/copied, but not changed.
+    pub read_only: bool,
+    /// Whether the widget is busy (loading or processing).
+    pub busy: bool,
+    /// Whether the widget is hidden from assistive technology.
+    ///
+    /// Used to hide background content when a modal dialog is open.
+    pub hidden: bool,
+    /// Whether this dialog is modal.
+    ///
+    /// When set on a Dialog node, assistive technology restricts
+    /// interaction to the dialog's content.
+    pub modal: bool,
+    /// The keyboard mnemonic for this widget (Alt+letter).
+    ///
+    /// When the user presses Alt plus this character, the widget is
+    /// focused and activated.
+    pub mnemonic: Option<char>,
 }
