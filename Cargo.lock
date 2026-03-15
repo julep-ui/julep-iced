@@ -1257,18 +1257,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "460fbee9c2c2f33933d720630a6a0bac33ba7053db5344fac858d4b8952d77d5"
 
 [[package]]
-name = "cryoglyph"
-version = "0.1.0"
-source = "git+https://github.com/iced-rs/cryoglyph.git?rev=1d68895e9c4c9b73739f826e81c2e3012c155cce#1d68895e9c4c9b73739f826e81c2e3012c155cce"
-dependencies = [
- "cosmic-text",
- "etagere",
- "lru",
- "rustc-hash 2.1.1",
- "wgpu",
-]
-
-[[package]]
 name = "crypto-common"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2856,6 +2844,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "julep-iced-cryoglyph"
+version = "0.6.0"
+dependencies = [
+ "cosmic-text",
+ "etagere",
+ "lru",
+ "rustc-hash 2.1.1",
+ "wgpu",
+]
+
+[[package]]
 name = "julep-iced-debug"
 version = "0.6.0"
 dependencies = [
@@ -3004,10 +3003,10 @@ version = "0.6.0"
 dependencies = [
  "bitflags 2.11.0",
  "bytemuck",
- "cryoglyph",
  "futures",
  "glam",
  "guillotiere",
+ "julep-iced-cryoglyph",
  "julep-iced-debug",
  "julep-iced-graphics",
  "log",

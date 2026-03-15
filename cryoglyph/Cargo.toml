@@ -1,0 +1,28 @@
+[package]
+name = "julep-iced-cryoglyph"
+description = "Vendored fork of cryoglyph for Julep -- Fast, simple 2D text rendering for wgpu"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license = "MIT OR Apache-2.0 OR Zlib"
+repository.workspace = true
+homepage.workspace = true
+
+[lib]
+name = "cryoglyph"
+
+[lints.rust]
+rust_2018_idioms = { level = "deny", priority = -1 }
+unsafe_code = "allow"
+missing_docs = "allow"
+unused_results = "allow"
+
+[lints.clippy]
+type-complexity = "allow"
+
+[dependencies]
+wgpu.workspace = true
+cosmic-text.workspace = true
+rustc-hash.workspace = true
+etagere = "0.2"
+lru = { version = "0.16", default-features = false }
