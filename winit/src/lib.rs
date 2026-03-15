@@ -1295,6 +1295,36 @@ async fn run_instance<P>(
                                         window.raw.request_redraw();
                                         continue;
                                     }
+
+                                    // Alt+letter mnemonics: focus and activate
+                                    if let Some(bounds) = runtime::keyboard::handle_mnemonic(
+                                        &event,
+                                        status,
+                                        ui,
+                                        &window.renderer,
+                                    ) {
+                                        let center = bounds.center();
+                                        events.push((
+                                            id,
+                                            core::Event::Mouse(core::mouse::Event::CursorMoved {
+                                                position: center,
+                                            }),
+                                        ));
+                                        events.push((
+                                            id,
+                                            core::Event::Mouse(core::mouse::Event::ButtonPressed(
+                                                core::mouse::Button::Left,
+                                            )),
+                                        ));
+                                        events.push((
+                                            id,
+                                            core::Event::Mouse(core::mouse::Event::ButtonReleased(
+                                                core::mouse::Button::Left,
+                                            )),
+                                        ));
+                                        window.raw.request_redraw();
+                                        continue;
+                                    }
                                 }
 
                                 runtime.broadcast(subscription::Event::Interaction {
