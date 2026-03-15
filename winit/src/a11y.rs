@@ -500,10 +500,10 @@ impl TreeBuilder {
                 .filter_map(|wid| wid_to_node.get(wid).copied())
                 .collect();
 
-            if !node_ids.is_empty() {
-                if let Some((_, node)) = self.nodes.iter_mut().find(|(nid, _)| nid == source_id) {
-                    node.set_radio_group(node_ids);
-                }
+            if !node_ids.is_empty()
+                && let Some((_, node)) = self.nodes.iter_mut().find(|(nid, _)| nid == source_id)
+            {
+                node.set_radio_group(node_ids);
             }
         }
 
@@ -660,8 +660,7 @@ impl Operation for TreeBuilder {
             self.active_desc_refs.push((node_id, wid.clone()));
         }
         if let Some(wids) = accessible.radio_group {
-            self.radio_group_refs
-                .push((node_id, wids.iter().cloned().collect()));
+            self.radio_group_refs.push((node_id, wids.to_vec()));
         }
 
         // Declare supported actions so AT knows what interactions

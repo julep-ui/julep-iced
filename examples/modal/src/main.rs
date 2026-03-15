@@ -1,9 +1,11 @@
+use iced::advanced::widget::operate;
+use iced::advanced::widget::operation::focusable;
 use iced::event::{self, Event};
 use iced::keyboard;
 use iced::keyboard::key;
 use iced::widget::{
-    button, center, column, container, mouse_area, opaque, operation, pick_list, row, space, stack,
-    text, text_input,
+    button, center, column, container, mouse_area, opaque, pick_list, row, space, stack, text,
+    text_input,
 };
 use iced::{Bottom, Color, Element, Fill, Subscription, Task};
 
@@ -14,6 +16,8 @@ pub fn main() -> iced::Result {
         .subscription(App::subscription)
         .run()
 }
+
+const MODAL_CONTENT: &str = "modal-content";
 
 #[derive(Default)]
 struct App {
@@ -43,7 +47,7 @@ impl App {
         match message {
             Message::ShowModal => {
                 self.show_modal = true;
-                operation::focus_next()
+                operate(focusable::focus_next_within(MODAL_CONTENT.into()))
             }
             Message::HideModal => {
                 self.hide_modal();
@@ -72,9 +76,20 @@ impl App {
                 Event::Keyboard(keyboard::Event::KeyPressed {
                     key: keyboard::Key::Named(key::Named::Escape),
                     ..
-                }) => {
+                }) if self.show_modal => {
                     self.hide_modal();
                     Task::none()
+                }
+                Event::Keyboard(keyboard::Event::KeyPressed {
+                    key: keyboard::Key::Named(key::Named::Tab),
+                    modifiers,
+                    ..
+                }) if self.show_modal => {
+                    if modifiers.shift() {
+                        operate(focusable::focus_previous_within(MODAL_CONTENT.into()))
+                    } else {
+                        operate(focusable::focus_next_within(MODAL_CONTENT.into()))
+                    }
                 }
                 _ => Task::none(),
             },
@@ -133,6 +148,7 @@ impl App {
                 ]
                 .spacing(20),
             )
+            .id(MODAL_CONTENT)
             .width(300)
             .padding(10)
             .style(container::rounded_box);
