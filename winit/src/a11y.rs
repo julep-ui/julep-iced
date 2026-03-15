@@ -359,8 +359,6 @@ pub struct TreeBuilder {
     active_desc_refs: Vec<(NodeId, widget::Id)>,
     /// Pending `radio_group` relationships to resolve in `build()`.
     radio_group_refs: Vec<(NodeId, Vec<widget::Id>)>,
-    /// Pending `error_message` cross-node relationships to resolve in `build()`.
-    error_msg_refs: Vec<(NodeId, widget::Id)>,
 }
 
 impl TreeBuilder {
@@ -383,7 +381,6 @@ impl TreeBuilder {
             desc_refs: Vec::new(),
             active_desc_refs: Vec::new(),
             radio_group_refs: Vec::new(),
-            error_msg_refs: Vec::new(),
         }
     }
 }
@@ -500,18 +497,10 @@ impl TreeBuilder {
                 .filter_map(|wid| wid_to_node.get(wid).copied())
                 .collect();
 
-            if !node_ids.is_empty()
-                && let Some((_, node)) = self.nodes.iter_mut().find(|(nid, _)| nid == source_id)
-            {
-                node.set_radio_group(node_ids);
-            }
-        }
-
-        for (source_id, target_wid) in &self.error_msg_refs {
-            if let Some(target_nid) = wid_to_node.get(target_wid)
-                && let Some((_, node)) = self.nodes.iter_mut().find(|(nid, _)| nid == source_id)
-            {
-                node.set_error_message(*target_nid);
+            if !node_ids.is_empty() {
+                if let Some((_, node)) = self.nodes.iter_mut().find(|(nid, _)| nid == source_id) {
+                    node.set_radio_group(node_ids);
+                }
             }
         }
 
@@ -660,7 +649,8 @@ impl Operation for TreeBuilder {
             self.active_desc_refs.push((node_id, wid.clone()));
         }
         if let Some(wids) = accessible.radio_group {
-            self.radio_group_refs.push((node_id, wids.to_vec()));
+            self.radio_group_refs
+                .push((node_id, wids.iter().cloned().collect()));
         }
 
         // Declare supported actions so AT knows what interactions
@@ -719,27 +709,6 @@ impl Operation for TreeBuilder {
                 IcedHasPopup::Menu => accesskit::HasPopup::Menu,
                 IcedHasPopup::Dialog => accesskit::HasPopup::Dialog,
             });
-        }
-        if accessible.invalid {
-            node.set_invalid(accesskit::Invalid::True);
-        }
-        if let Some(error_wid) = accessible.error_message {
-            self.error_msg_refs.push((node_id, error_wid.clone()));
-        }
-        if accessible.read_only {
-            node.set_read_only();
-        }
-        if accessible.busy {
-            node.set_busy();
-        }
-        if accessible.hidden {
-            node.set_hidden();
-        }
-        if accessible.modal {
-            node.set_modal();
-        }
-        if let Some(ch) = accessible.mnemonic {
-            node.set_keyboard_shortcut(format!("Alt+{}", ch.to_uppercase()));
         }
 
         let parent = self.current_parent();

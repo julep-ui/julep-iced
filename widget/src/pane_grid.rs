@@ -79,6 +79,8 @@ pub use state::State;
 pub use title_bar::TitleBar;
 
 use crate::container;
+use crate::core::keyboard;
+use crate::core::keyboard::key;
 use crate::core::layout;
 use crate::core::mouse;
 use crate::core::overlay::{self, Group};
@@ -163,6 +165,8 @@ where
     on_click: Option<Box<dyn Fn(Pane) -> Message + 'a>>,
     on_drag: Option<Box<dyn Fn(DragEvent) -> Message + 'a>>,
     on_resize: Option<(f32, Box<dyn Fn(ResizeEvent) -> Message + 'a>)>,
+    on_focus_cycle: Option<Box<dyn Fn(Pane) -> Message + 'a>>,
+    focused: Option<Pane>,
     class: <Theme as Catalog>::Class<'a>,
     last_mouse_interaction: Option<mouse::Interaction>,
 }
@@ -201,6 +205,8 @@ where
             on_click: None,
             on_drag: None,
             on_resize: None,
+            on_focus_cycle: None,
+            focused: None,
             class: <Theme as Catalog>::default(),
             last_mouse_interaction: None,
         }
@@ -268,6 +274,30 @@ where
         if self.internal.maximized().is_none() {
             self.on_resize = Some((leeway.into().0, Box::new(f)));
         }
+        self
+    }
+
+    /// Sets the callback for focus cycling via F6 / Shift+F6.
+    ///
+    /// When the user presses F6, the next [`Pane`] in order is published.
+    /// Shift+F6 cycles in reverse. The application is responsible for
+    /// tracking which pane is focused and passing it via
+    /// [`Self::focused_pane`].
+    pub fn on_focus_cycle<F>(mut self, f: F) -> Self
+    where
+        F: 'a + Fn(Pane) -> Message,
+    {
+        self.on_focus_cycle = Some(Box::new(f));
+        self
+    }
+
+    /// Sets the currently focused [`Pane`].
+    ///
+    /// This is used by [`Self::on_focus_cycle`] to determine the starting
+    /// point when cycling panes with F6 / Shift+F6. If no pane is focused,
+    /// cycling starts from the first pane.
+    pub fn focused_pane(mut self, pane: Pane) -> Self {
+        self.focused = Some(pane);
         self
     }
 
@@ -639,6 +669,40 @@ where
                         }
                     } else if action.picked_pane().is_some() {
                         shell.request_redraw();
+                    }
+                }
+            }
+            Event::Keyboard(keyboard::Event::KeyPressed {
+                key: keyboard::Key::Named(key::Named::F6),
+                modifiers,
+                ..
+            }) => {
+                if let Some(on_focus_cycle) = &self.on_focus_cycle {
+                    let panes: Vec<_> = self
+                        .panes
+                        .iter()
+                        .copied()
+                        .filter(|pane| self.internal.maximized().is_none_or(|m| *pane == m))
+                        .collect();
+
+                    if panes.len() > 1 {
+                        let current_idx = self
+                            .focused
+                            .and_then(|f| panes.iter().position(|p| *p == f))
+                            .unwrap_or(0);
+
+                        let next_idx = if modifiers.shift() {
+                            if current_idx == 0 {
+                                panes.len() - 1
+                            } else {
+                                current_idx - 1
+                            }
+                        } else {
+                            (current_idx + 1) % panes.len()
+                        };
+
+                        shell.publish(on_focus_cycle(panes[next_idx]));
+                        shell.capture_event();
                     }
                 }
             }
