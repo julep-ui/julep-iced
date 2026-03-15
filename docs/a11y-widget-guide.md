@@ -329,6 +329,35 @@ triggers. Set to `HasPopup::Listbox` for dropdowns (combobox, pick list),
 that open modal dialogs. The screen reader announces "has popup" and
 may adjust interaction mode.
 
+**`invalid: bool`** -- Set to `true` when a form field's value fails
+validation. The screen reader announces "invalid entry." Pair with
+`error_message` to describe why.
+
+**`error_message: Option<&widget::Id>`** -- Points to a widget
+containing the error description text. The screen reader reads the
+error when the user navigates to the invalid field. Uses deferred
+ID resolution like `labelled_by`.
+
+**`read_only: bool`** -- Set to `true` for fields that can be read
+and selected but not edited. Distinct from `disabled`: read-only
+widgets are navigable and their values can be copied.
+
+**`busy: bool`** -- Set to `true` when the widget is loading or
+processing. The screen reader announces "busy."
+
+**`hidden: bool`** -- Set to `true` to hide the widget from assistive
+technology. Used to hide background content when a modal dialog is
+open. The widget is still rendered visually but invisible to screen
+readers.
+
+**`modal: bool`** -- Set to `true` on Dialog role nodes to indicate
+the dialog is modal. Assistive technology restricts interaction to
+the dialog's content.
+
+**`mnemonic: Option<char>`** -- The keyboard mnemonic for this widget.
+When the user presses Alt plus this character, the widget is focused
+and activated. The screen reader announces the shortcut.
+
 Use struct update syntax to set only what applies:
 
 ```rust

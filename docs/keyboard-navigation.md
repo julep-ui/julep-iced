@@ -312,6 +312,58 @@ events from subscriptions) are handled by the caller.
 
 The integration example demonstrates this pattern.
 
+Additional functions for specific scenarios:
+- `handle_tab_within(event, status, ui, renderer, scope)` -- Tab
+  cycles only within descendants of the container with the given ID.
+  Used for modal dialog focus trapping.
+- `handle_ctrl_tab_within(event, ui, renderer, scope)` -- same but
+  unconditional.
+- `handle_mnemonic(event, status, ui, renderer)` -- matches
+  Alt+letter events. Returns `Option<Rectangle>` with the matched
+  widget's bounds for the caller to generate a synthetic click.
+
+---
+
+## Modal dialog focus trapping
+
+When a modal dialog is open, Tab should cycle only within the
+dialog's content. The `handle_tab_within()` function restricts focus
+cycling to descendants of a specific container.
+
+The pattern:
+1. Give the modal content container a widget ID
+2. When the modal is open, handle Tab events in the app's update
+   method using `focus_next_within(modal_id)` or
+   `focus_previous_within(modal_id)` as the returned Task
+3. Set `hidden: true` on background content's accessible metadata
+   so screen readers don't navigate behind the modal
+4. Set `modal: true` on the dialog container for AT semantics
+5. On open: save the current focus, then focus the first widget in
+   the modal
+6. On close: restore focus to the saved widget
+
+The modal example demonstrates this pattern.
+
+---
+
+## Alt-key mnemonics
+
+Widgets can declare a keyboard mnemonic via the `mnemonic` field on
+`Accessible`. When the user presses Alt plus the mnemonic character,
+the framework focuses the widget and generates a synthetic click to
+activate it.
+
+Mnemonics work when the Alt+letter event is not captured by any
+widget. Text inputs that capture Alt+letter for special character
+input prevent the mnemonic from firing.
+
+The mnemonic is mapped to accesskit's `keyboard_shortcut` property
+so screen readers can announce the shortcut (e.g., "Save, button,
+Alt+S").
+
+Visual underline of the mnemonic character is not yet implemented.
+The mnemonic works functionally without the visual indicator.
+
 ---
 
 ## Making a new widget focusable
