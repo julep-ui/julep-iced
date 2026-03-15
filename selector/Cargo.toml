@@ -1,6 +1,6 @@
 [package]
-name = "iced_selector"
-description = "A set of abstractions for selecting data from the widget tree"
+name = "julep-iced-selector"
+description = "Vendored fork of iced_selector for Julep -- A set of abstractions for selecting data from the widget tree"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -13,6 +13,9 @@ rust-version.workspace = true
 
 [dependencies]
 iced_core.workspace = true
+
+[lib]
+name = "iced_selector"
 
 [lints]
 workspace = true

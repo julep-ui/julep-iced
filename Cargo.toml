@@ -1,6 +1,6 @@
 [package]
-name = "iced"
-description = "A cross-platform GUI library inspired by Elm"
+name = "julep-iced"
+description = "Vendored fork of iced for Julep -- a cross-platform GUI library inspired by Elm"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -10,6 +10,10 @@ homepage.workspace = true
 categories.workspace = true
 keywords.workspace = true
 rust-version.workspace = true
+readme = "README.md"
+
+[lib]
+name = "iced"
 
 [lints]
 workspace = true
@@ -159,35 +163,35 @@ members = [
 ]
 
 [workspace.package]
-version = "0.15.0-dev"
-authors = ["Héctor Ramón Jiménez <hector@hecrj.dev>"]
+version = "0.6.0"
+authors = ["Héctor Ramón Jiménez <hector@hecrj.dev>", "Daniel Hedlund <daniel@digitree.org>"]
 edition = "2024"
 license = "MIT"
-repository = "https://github.com/iced-rs/iced"
-homepage = "https://iced.rs"
+repository = "https://github.com/lincracy/julep-iced"
+homepage = "https://github.com/lincracy/julep-iced"
 categories = ["gui"]
-keywords = ["gui", "ui", "graphics", "interface", "widgets"]
+keywords = ["gui", "ui", "graphics", "interface", "accessibility"]
 rust-version = "1.92"
 
 [workspace.dependencies]
-iced = { version = "0.15.0-dev", path = "." }
-iced_beacon = { version = "0.15.0-dev", path = "beacon" }
-iced_core = { version = "0.15.0-dev", path = "core" }
-iced_debug = { version = "0.15.0-dev", path = "debug" }
-iced_devtools = { version = "0.15.0-dev", path = "devtools" }
-iced_futures = { version = "0.15.0-dev", path = "futures" }
-iced_graphics = { version = "0.15.0-dev", path = "graphics" }
-iced_highlighter = { version = "0.15.0-dev", path = "highlighter" }
-iced_program = { version = "0.15.0-dev", path = "program" }
-iced_renderer = { version = "0.15.0-dev", path = "renderer" }
-iced_runtime = { version = "0.15.0-dev", path = "runtime" }
-iced_selector = { version = "0.15.0-dev", path = "selector" }
-iced_test = { version = "0.15.0-dev", path = "test" }
-iced_tester = { version = "0.15.0-dev", path = "tester" }
-iced_tiny_skia = { version = "0.15.0-dev", path = "tiny_skia", default-features = false }
-iced_wgpu = { version = "0.15.0-dev", path = "wgpu", default-features = false }
-iced_widget = { version = "0.15.0-dev", path = "widget" }
-iced_winit = { version = "0.15.0-dev", path = "winit", default-features = false }
+iced = { version = "0.6.0", path = ".", package = "julep-iced" }
+iced_beacon = { version = "0.6.0", path = "beacon", package = "julep-iced-beacon" }
+iced_core = { version = "0.6.0", path = "core", package = "julep-iced-core" }
+iced_debug = { version = "0.6.0", path = "debug", package = "julep-iced-debug" }
+iced_devtools = { version = "0.6.0", path = "devtools", package = "julep-iced-devtools" }
+iced_futures = { version = "0.6.0", path = "futures", package = "julep-iced-futures" }
+iced_graphics = { version = "0.6.0", path = "graphics", package = "julep-iced-graphics" }
+iced_highlighter = { version = "0.6.0", path = "highlighter", package = "julep-iced-highlighter" }
+iced_program = { version = "0.6.0", path = "program", package = "julep-iced-program" }
+iced_renderer = { version = "0.6.0", path = "renderer", package = "julep-iced-renderer" }
+iced_runtime = { version = "0.6.0", path = "runtime", package = "julep-iced-runtime" }
+iced_selector = { version = "0.6.0", path = "selector", package = "julep-iced-selector" }
+iced_test = { version = "0.6.0", path = "test", package = "julep-iced-test" }
+iced_tester = { version = "0.6.0", path = "tester", package = "julep-iced-tester" }
+iced_tiny_skia = { version = "0.6.0", path = "tiny_skia", default-features = false, package = "julep-iced-tiny-skia" }
+iced_wgpu = { version = "0.6.0", path = "wgpu", default-features = false, package = "julep-iced-wgpu" }
+iced_widget = { version = "0.6.0", path = "widget", package = "julep-iced-widget" }
+iced_winit = { version = "0.6.0", path = "winit", default-features = false, package = "julep-iced-winit" }
 
 accesskit = "0.24"
 accesskit_winit = "0.32"

@@ -1,6 +1,6 @@
 [package]
-name = "iced_wgpu"
-description = "A renderer for iced on top of wgpu"
+name = "julep-iced-wgpu"
+description = "Vendored fork of iced_wgpu for Julep -- A renderer for iced on top of wgpu"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -9,6 +9,9 @@ repository.workspace = true
 homepage.workspace = true
 categories.workspace = true
 keywords.workspace = true
+
+[lib]
+name = "iced_wgpu"
 
 [lints]
 workspace = true

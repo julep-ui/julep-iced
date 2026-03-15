@@ -1,6 +1,6 @@
 [package]
-name = "iced_beacon"
-description = "A client/server protocol to monitor and supervise iced applications"
+name = "julep-iced-beacon"
+description = "Vendored fork of iced_beacon for Julep -- A client/server protocol to monitor and supervise iced applications"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -9,6 +9,9 @@ repository.workspace = true
 homepage.workspace = true
 categories.workspace = true
 keywords.workspace = true
+
+[lib]
+name = "iced_beacon"
 
 [dependencies]
 iced_core.workspace = true

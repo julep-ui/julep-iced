@@ -1,6 +1,6 @@
 [package]
-name = "iced_winit"
-description = "A runtime for iced on top of winit"
+name = "julep-iced-winit"
+description = "Vendored fork of iced_winit for Julep -- A runtime for iced on top of winit"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -9,6 +9,9 @@ repository.workspace = true
 homepage.workspace = true
 categories.workspace = true
 keywords.workspace = true
+
+[lib]
+name = "iced_winit"
 
 [lints]
 workspace = true

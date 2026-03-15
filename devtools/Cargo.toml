@@ -1,6 +1,6 @@
 [package]
-name = "iced_devtools"
-description = "Attachable developer tools for any iced program"
+name = "julep-iced-devtools"
+description = "Vendored fork of iced_devtools for Julep -- Attachable developer tools for any iced program"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -10,6 +10,9 @@ homepage.workspace = true
 categories.workspace = true
 keywords.workspace = true
 rust-version.workspace = true
+
+[lib]
+name = "iced_devtools"
 
 [lints]
 workspace = true

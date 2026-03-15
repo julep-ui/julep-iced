@@ -6,4 +6,4 @@ edition = "2024"
 publish = false
 
 [dependencies]
-iced = { path = "../..", features = ["debug"] }
+iced = { path = "../..", features = ["debug"], package = "julep-iced" }

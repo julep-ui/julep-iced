@@ -1,6 +1,6 @@
 [package]
-name = "iced_tester"
-description = "A test recorder, editor, and runner for your iced applications"
+name = "julep-iced-tester"
+description = "Vendored fork of iced_tester for Julep -- A test recorder, editor, and runner for your iced applications"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -16,6 +16,9 @@ iced_test.workspace = true
 iced_widget.workspace = true
 log.workspace = true
 rfd.workspace = true
+
+[lib]
+name = "iced_tester"
 
 [lints]
 workspace = true

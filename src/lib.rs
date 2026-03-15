@@ -1,3 +1,10 @@
+//! **julep-iced** is a vendored fork of [iced](https://github.com/iced-rs/iced)
+//! maintained for the [Julep](https://github.com/lincracy/julep) project.
+//! See the [repository](https://github.com/lincracy/julep-iced) for what's
+//! different from upstream.
+//!
+//! ---
+//!
 //! iced is a cross-platform GUI library focused on simplicity and type-safety.
 //! Inspired by [Elm].
 //!

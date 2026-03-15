@@ -1,6 +1,6 @@
 [package]
-name = "iced_program"
-description = "The definition of an iced program"
+name = "julep-iced-program"
+description = "Vendored fork of iced_program for Julep -- The definition of an iced program"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -10,6 +10,9 @@ homepage.workspace = true
 categories.workspace = true
 keywords.workspace = true
 rust-version.workspace = true
+
+[lib]
+name = "iced_program"
 
 [lints]
 workspace = true

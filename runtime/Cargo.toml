@@ -1,6 +1,6 @@
 [package]
-name = "iced_runtime"
-description = "A renderer-agnostic runtime for iced"
+name = "julep-iced-runtime"
+description = "Vendored fork of iced_runtime for Julep -- A renderer-agnostic runtime for iced"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -14,6 +14,9 @@ keywords.workspace = true
 a11y = []
 selector = ["dep:iced_selector"]
 image = ["iced_core/image"]
+
+[lib]
+name = "iced_runtime"
 
 [lints]
 workspace = true

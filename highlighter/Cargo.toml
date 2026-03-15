@@ -1,6 +1,6 @@
 [package]
-name = "iced_highlighter"
-description = "A syntax highlighter for iced"
+name = "julep-iced-highlighter"
+description = "Vendored fork of iced_highlighter for Julep -- A syntax highlighter for iced"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -9,6 +9,9 @@ repository.workspace = true
 homepage.workspace = true
 categories.workspace = true
 keywords.workspace = true
+
+[lib]
+name = "iced_highlighter"
 
 [lints]
 workspace = true

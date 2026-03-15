@@ -26,12 +26,12 @@ jobs:
     - name: Pack todos .deb package
       run: cargo deb --no-build --profile release-opt --package todos
     - name: Rename todos .deb package
-      run: mv target/debian/*.deb target/debian/iced_todos-x86_64-debian-linux-gnu.deb
+      run: mv target/debian/*.deb target/debian/julep-iced-todos-x86_64-debian-linux-gnu.deb
     - name: Archive todos .deb package
       uses: actions/upload-artifact@v4
       with:
         name: todos-x86_64-debian-linux-gnu
-        path: target/debian/iced_todos-x86_64-debian-linux-gnu.deb
+        path: target/debian/julep-iced-todos-x86_64-debian-linux-gnu.deb
 
   todos_windows:
     runs-on: windows-latest

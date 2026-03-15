@@ -1,6 +1,6 @@
 [package]
-name = "iced_widget"
-description = "The built-in widgets for iced"
+name = "julep-iced-widget"
+description = "Vendored fork of iced_widget for Julep -- The built-in widgets for iced"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -9,6 +9,9 @@ repository.workspace = true
 homepage.workspace = true
 categories.workspace = true
 keywords.workspace = true
+
+[lib]
+name = "iced_widget"
 
 [lints]
 workspace = true

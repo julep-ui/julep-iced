@@ -1,6 +1,6 @@
 [package]
-name = "iced_debug"
-description = "A pluggable API for debugging iced applications"
+name = "julep-iced-debug"
+description = "Vendored fork of iced_debug for Julep -- A pluggable API for debugging iced applications"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -9,6 +9,9 @@ repository.workspace = true
 homepage.workspace = true
 categories.workspace = true
 keywords.workspace = true
+
+[lib]
+name = "iced_debug"
 
 [features]
 enable = ["dep:iced_beacon"]
