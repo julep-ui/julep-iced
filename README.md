@@ -1,7 +1,7 @@
 # julep-iced
 
 Vendored fork of [iced](https://github.com/iced-rs/iced) maintained
-for the [Julep](https://github.com/lincracy/julep) project. Tracks
+for the [Julep](https://github.com/julep-ui/julep) project. Tracks
 iced's master branch with additional features. Version numbers are
 independent of upstream iced releases.
 
