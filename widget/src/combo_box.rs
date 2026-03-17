@@ -703,11 +703,34 @@ where
                 {
                     let shift_modifier = modifiers.shift();
                     match (named_key, shift_modifier) {
-                        (key::Named::Enter, _) => {
+                        (key::Named::Enter, _) if !menu.dismissed => {
                             if let Some(index) = &menu.hovered_option
                                 && let Some(option) = state.filtered_options.options.get(*index)
                             {
                                 menu.new_selection = Some(option.clone());
+                            }
+
+                            shell.capture_event();
+                            shell.request_redraw();
+                        }
+                        (key::Named::Tab, _) if !menu.dismissed => {
+                            // Menu is open: Tab accepts the highlighted
+                            // option (if any) and dismisses the menu.
+                            // The event is captured so focus stays on
+                            // the combo box. A second Tab (with the menu
+                            // now dismissed) will move focus normally.
+                            if let Some(index) = &menu.hovered_option
+                                && let Some(option) = state.filtered_options.options.get(*index)
+                            {
+                                menu.new_selection = Some(option.clone());
+                            } else {
+                                // No highlighted option -- just close the menu.
+                                menu.dismissed = true;
+                                shell.invalidate_widgets();
+
+                                if let Some(on_close) = self.on_close.take() {
+                                    shell.publish(on_close);
+                                }
                             }
 
                             shell.capture_event();
@@ -775,28 +798,32 @@ where
         // If the overlay menu has selected something
         self.state.with_inner_mut(|state| {
             if let Some(selection) = menu.new_selection.take() {
-                // Clear the value and reset the options and menu
-                state.value = String::new();
+                // Set the input value to the selected option's display text
+                // so the user sees what was selected while the input is
+                // still focused. Reset the filter and menu state.
+                state.value = T::to_string(&selection);
                 state.filtered_options.update(self.state.options.clone());
                 menu.menu = menu::State::default();
+                menu.hovered_option = None;
+
+                // Move cursor to end of the selected text
+                tree.children[0]
+                    .state
+                    .downcast_mut::<text_input::State<Renderer::Paragraph>>()
+                    .move_cursor_to_end();
 
                 // Notify the selection
                 shell.publish((self.on_selected)(selection));
                 published_message_to_shell = true;
 
-                // Unfocus the input
-                let mut local_messages = Vec::new();
-                let mut local_shell = Shell::new(&mut local_messages);
-                self.text_input.update(
-                    &mut tree.children[0],
-                    &Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)),
-                    layout,
-                    mouse::Cursor::Unavailable,
-                    renderer,
-                    &mut local_shell,
-                    viewport,
-                );
-                shell.request_input_method(local_shell.input_method());
+                // Dismiss the menu but keep focus on the input so
+                // keyboard navigation can continue (Tab to next widget).
+                menu.dismissed = true;
+                shell.invalidate_widgets();
+
+                if let Some(on_close) = self.on_close.take() {
+                    shell.publish(on_close);
+                }
             }
         });
 
