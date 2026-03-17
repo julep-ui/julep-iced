@@ -1,6 +1,6 @@
 [package]
 name = "julep-iced-highlighter"
-description = "Vendored fork of iced_highlighter for Julep -- A syntax highlighter for iced"
+description = "Vendored fork of iced_highlighter for Julep UI -- A syntax highlighter for iced"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true

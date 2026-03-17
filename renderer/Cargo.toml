@@ -1,6 +1,6 @@
 [package]
 name = "julep-iced-renderer"
-description = "Vendored fork of iced_renderer for Julep -- The official renderer for iced"
+description = "Vendored fork of iced_renderer for Julep UI -- The official renderer for iced"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

@@ -1,6 +1,6 @@
 [package]
 name = "julep-iced-tester"
-description = "Vendored fork of iced_tester for Julep -- A test recorder, editor, and runner for your iced applications"
+description = "Vendored fork of iced_tester for Julep UI -- A test recorder, editor, and runner for your iced applications"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true

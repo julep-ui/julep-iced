@@ -1,6 +1,6 @@
 [package]
 name = "julep-iced-tiny-skia"
-description = "Vendored fork of iced_tiny_skia for Julep -- A software renderer for iced on top of tiny-skia"
+description = "Vendored fork of iced_tiny_skia for Julep UI -- A software renderer for iced on top of tiny-skia"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

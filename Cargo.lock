@@ -2794,7 +2794,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "criterion",
  "image",
@@ -2814,7 +2814,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-beacon"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "bincode 1.3.3",
  "futures",
@@ -2828,7 +2828,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-core"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "bitflags 2.11.0",
  "bytes",
@@ -2845,7 +2845,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-cryoglyph"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "cosmic-text",
  "etagere",
@@ -2856,7 +2856,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-debug"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "cargo-hot-protocol",
  "julep-iced-beacon",
@@ -2867,7 +2867,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-devtools"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "julep-iced-debug",
  "julep-iced-program",
@@ -2877,7 +2877,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-futures"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "futures",
  "julep-iced-core",
@@ -2891,7 +2891,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-graphics"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "bitflags 2.11.0",
  "bytemuck",
@@ -2911,7 +2911,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-highlighter"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "julep-iced-core",
  "two-face",
@@ -2919,7 +2919,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-program"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "julep-iced-graphics",
  "julep-iced-runtime",
@@ -2927,7 +2927,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-renderer"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "julep-iced-graphics",
  "julep-iced-tiny-skia",
@@ -2938,7 +2938,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-runtime"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "bytes",
  "julep-iced-core",
@@ -2951,14 +2951,14 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-selector"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "julep-iced-core",
 ]
 
 [[package]]
 name = "julep-iced-test"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "julep-iced-futures",
  "julep-iced-program",
@@ -2973,7 +2973,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-tester"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "julep-iced-test",
  "julep-iced-widget",
@@ -2983,7 +2983,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-tiny-skia"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -2999,7 +2999,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-wgpu"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "bitflags 2.11.0",
  "bytemuck",
@@ -3019,7 +3019,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-widget"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "julep-iced-highlighter",
  "julep-iced-renderer",
@@ -3035,7 +3035,7 @@ dependencies = [
 
 [[package]]
 name = "julep-iced-winit"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "accesskit",
  "accesskit_winit",

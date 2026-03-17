@@ -1,6 +1,6 @@
 [package]
 name = "julep-iced-cryoglyph"
-description = "Vendored fork of cryoglyph for Julep -- Fast, simple 2D text rendering for wgpu"
+description = "Vendored fork of cryoglyph for Julep UI -- Fast, simple 2D text rendering for wgpu"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

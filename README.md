@@ -1,7 +1,7 @@
 # julep-iced
 
 Vendored fork of [iced](https://github.com/iced-rs/iced) maintained
-for the [Julep](https://github.com/julep-ui/julep) project. Tracks
+for the [Julep UI](https://github.com/julep-ui) project. Tracks
 iced's master branch with additional features. Version numbers are
 independent of upstream iced releases.
 
@@ -29,10 +29,12 @@ independent of upstream iced releases.
 - Keyboard activation: Button (Space/Enter), Checkbox (Space),
   Radio (Space), Toggler (Space), Slider (arrows, Home/End,
   Page Up/Down), PickList (arrows, Enter/Space, Escape), ComboBox
-  (arrow navigation with Escape state preservation)
+  (arrow navigation with Escape state preservation, Tab autocomplete,
+  Enter/Tab select from dropdown)
 - Keyboard scrolling: Page Up/Down, arrows, Home/End; Shift swaps
   to horizontal axis
 - Scroll-into-view on Tab navigation with nested scrollable cascade
+  (properly handles backward scrolling and scrollbar overlap)
 - Scroll bubbling through ancestor scrollables with tree-wide
   directional fallback
 - PaneGrid keyboard pane switching (F6/Shift+F6)
@@ -49,6 +51,13 @@ independent of upstream iced releases.
   for modal and dialog patterns
 - Mnemonic lookup operation for Alt+letter widget activation
 - Accessibility selectors in `iced_test` for headless a11y testing
+- `focus_color`, `focus_border_color`, `focus_shadow`,
+  `focus_shadow_subtle` palette helpers for consistent focus indicators
+- TextEditor undo/redo (Ctrl+Z/Ctrl+Y, Cmd on macOS)
+- TextInput/TextEditor `input_purpose` for IME hints
+- Markdown `code_theme` for syntax highlighting themes
+- `find_focused` runtime operation
+- Runtime font loading at any time (not just startup)
 
 ### Removed from upstream
 

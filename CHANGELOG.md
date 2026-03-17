@@ -9,6 +9,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-03-17
+
+### Added
+- Keyboard focus visibility with shadow glow and adaptive border color
+  (`focus_color`, `focus_border_color`, `focus_shadow`, `focus_shadow_subtle`
+  palette helpers)
+- TextEditor undo/redo via Ctrl+Z / Ctrl+Y (Cmd on macOS)
+- TextInput/TextEditor `input_purpose` builder for IME hints
+- Markdown `code_theme` for syntax highlighting
+- Modal focus trapping from accessible modal property
+- `find_focused` runtime operation
+- Test selector re-exports from `iced_test`
+
+### Fixed
+- `scroll_focused_into_view` now scrolls backward (was broken: target
+  coordinates incorrectly included scroll translation, preventing
+  backward detection). Also accounts for scrollbar dimensions and adds
+  scroll margin
+- ComboBox keyboard selection: Enter/Tab select the highlighted option
+  and display the selected text; Tab autocompletes when the menu is
+  open (captured) and moves focus when closed; Enter is ignored when
+  the menu is dismissed; cursor moves to end of selected text;
+  on_close callback fires in all dismiss paths
+- Focus border color consistency: single base color from the palette
+  with per-widget deviation (lighten/darken in oklch) when the base
+  blends with the widget background, instead of switching to an
+  unrelated color
+- Focus shadow scaled for widget size: `focus_shadow` (prominent, for
+  compact widgets) and `focus_shadow_subtle` (for large widgets)
+- Styling example: removed global keyboard subscription that stole
+  Space/Arrow events from focused widgets
+
 ## [0.6.0] - 2026-03-15
 
 Based on [iced 0.14.0](https://github.com/iced-rs/iced/blob/master/CHANGELOG.md#0140---2025-12-07).

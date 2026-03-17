@@ -1,6 +1,6 @@
 [package]
 name = "julep-iced-wgpu"
-description = "Vendored fork of iced_wgpu for Julep -- A renderer for iced on top of wgpu"
+description = "Vendored fork of iced_wgpu for Julep UI -- A renderer for iced on top of wgpu"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
