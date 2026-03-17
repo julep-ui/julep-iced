@@ -3045,6 +3045,7 @@ dependencies = [
  "julep-iced-runtime",
  "log",
  "mundy",
+ "objc2 0.5.2",
  "rustc-hash 2.1.1",
  "sysinfo",
  "thiserror 2.0.18",

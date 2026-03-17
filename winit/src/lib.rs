@@ -709,7 +709,8 @@ async fn run_instance<P>(
                     id,
                     core::Event::Window(window::Event::Opened {
                         position: window.position(),
-                        size: window.logical_size(),
+                        size: window.state.logical_size(),
+                        scale_factor: window.raw.scale_factor() as f32,
                     }),
                 ));
 
@@ -1655,7 +1656,7 @@ fn run_action<'a, P, C>(
             }
             window::Action::GetSize(id, channel) => {
                 if let Some(window) = window_manager.get_mut(id) {
-                    let size = window.logical_size();
+                    let size = window.state.logical_size();
                     let _ = channel.send(Size::new(size.width, size.height));
                 }
             }
@@ -1909,7 +1910,7 @@ fn run_action<'a, P, C>(
                         continue;
                     };
 
-                    let size = window.logical_size();
+                    let size = window.state.logical_size();
                     let ui = ui.relayout(size, &mut window.renderer);
                     let _ = interfaces.insert(id, ui);
 
@@ -1966,7 +1967,7 @@ fn run_action<'a, P, C>(
                 };
 
                 let cache = ui.into_cache();
-                let size = window.logical_size();
+                let size = window.state.logical_size();
 
                 let _ = interfaces.insert(
                     id,
