@@ -595,30 +595,71 @@ pub fn is_dark(color: Color) -> bool {
     to_oklch(color).l < 0.6
 }
 
-/// Builds a [`Shadow`] suitable for a keyboard-focus glow ring.
+/// Returns the base keyboard-focus color for the current palette.
 ///
-/// The shadow uses the given color at reduced opacity with a blur
-/// radius that creates a visible halo around the widget, ensuring
-/// focus is perceptible regardless of the widget's background color.
-pub fn focus_shadow(color: Color) -> Shadow {
-    Shadow {
-        color: Color { a: 0.5, ..color },
-        offset: Vector::ZERO,
-        blur_radius: 4.0,
+/// Chosen to contrast with the page background. All widgets share
+/// the same base color for visual consistency. Use
+/// [`focus_border_color`] to adjust the border for widgets whose
+/// background matches the base focus color.
+pub fn focus_color(accent: Color, page_bg: Color) -> Color {
+    if page_bg.relative_contrast(accent) >= 2.0 {
+        accent
+    } else if is_dark(page_bg) {
+        Color::WHITE
+    } else {
+        Color::BLACK
     }
 }
 
-/// Returns a border color for keyboard-focus that contrasts with
-/// the widget's background. If the widget background has insufficient
-/// contrast against `accent`, the widget's own text color is used instead.
-pub fn focus_border_color(widget_bg: Color, widget_text: Color, accent: Color) -> Color {
-    // WCAG SC 1.4.11 requires 3:1 for non-text UI. We use a stricter
-    // threshold (2.0) to switch to the text color earlier, since a
-    // border at 2:1 contrast is already hard to see at 2px width.
-    if widget_bg.relative_contrast(accent) < 2.0 {
-        widget_text
-    } else {
-        accent
+/// Returns a focus border color that contrasts with the widget's
+/// background while staying in the same color family as [`focus_color`].
+///
+/// When the base focus color already contrasts with the widget, it is
+/// returned unchanged. When they blend (e.g. accent-colored button
+/// with an accent focus color), the color is deviated (lightened or
+/// darkened) to create a visible border that still reads as the same
+/// hue.
+pub fn focus_border_color(widget_bg: Color, accent: Color, page_bg: Color) -> Color {
+    let base = focus_color(accent, page_bg);
+
+    // Transparent widgets sit on the page -- base already contrasts.
+    if widget_bg.a < 0.1 || widget_bg.relative_contrast(base) >= 1.5 {
+        return base;
+    }
+
+    // Deviate away from the widget background to create contrast
+    // while keeping the same hue family.
+    deviate(base, 0.3)
+}
+
+/// Builds a prominent [`Shadow`] for a keyboard-focus glow ring.
+///
+/// Designed for compact widgets (slider handles, radio buttons,
+/// checkboxes, togglers) where a subtle glow would be hard to see.
+/// Use [`focus_shadow_subtle`] for large widgets like text inputs
+/// and buttons where less blur is sufficient.
+pub fn focus_shadow(accent: Color, page_bg: Color) -> Shadow {
+    Shadow {
+        color: Color {
+            a: 0.85,
+            ..focus_color(accent, page_bg)
+        },
+        offset: Vector::ZERO,
+        blur_radius: 10.0,
+    }
+}
+
+/// A less prominent variant of [`focus_shadow`] for large widgets
+/// (buttons, text inputs, pick lists) where the glow doesn't need
+/// to compensate for a small surface area.
+pub fn focus_shadow_subtle(accent: Color, page_bg: Color) -> Shadow {
+    Shadow {
+        color: Color {
+            a: 0.75,
+            ..focus_color(accent, page_bg)
+        },
+        offset: Vector::ZERO,
+        blur_radius: 6.0,
     }
 }
 

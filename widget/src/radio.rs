@@ -64,13 +64,13 @@ use crate::core::layout;
 use crate::core::mouse;
 use crate::core::renderer;
 use crate::core::text;
+use crate::core::theme::palette;
 use crate::core::touch;
 use crate::core::widget;
 use crate::core::widget::operation::accessible::{Accessible, Role};
 use crate::core::widget::operation::focusable::Focusable;
 use crate::core::widget::tree::{self, Tree};
 use crate::core::window;
-use crate::core::theme::palette;
 use crate::core::{
     Background, Color, Element, Event, Layout, Length, Pixels, Rectangle, Shadow, Shell, Size,
     Theme, Widget,
@@ -627,16 +627,19 @@ pub fn default(theme: &Theme, status: Status) -> Style {
             background: palette.primary.weak.color.into(),
             ..active
         },
-        Status::Focused { .. } => Style {
-            border_color: palette::focus_border_color(
-                Color::TRANSPARENT,
-                palette.background.base.text,
-                palette.primary.strong.color,
-            ),
-            border_width: 2.0,
-            shadow: palette::focus_shadow(palette.primary.strong.color),
-            ..active
-        },
+        Status::Focused { .. } => {
+            let page_bg = palette.background.base.color;
+            Style {
+                border_color: palette::focus_border_color(
+                    Color::TRANSPARENT,
+                    palette.primary.strong.color,
+                    page_bg,
+                ),
+                border_width: 2.0,
+                shadow: palette::focus_shadow(palette.primary.strong.color, page_bg),
+                ..active
+            }
+        }
     }
 }
 

@@ -38,13 +38,13 @@ use crate::core::keyboard::key::{self, Key};
 use crate::core::layout::{self, Layout};
 use crate::core::mouse;
 use crate::core::renderer;
+use crate::core::theme::palette;
 use crate::core::touch;
 use crate::core::widget::Operation;
 use crate::core::widget::operation::accessible::{Accessible, Orientation, Role, Value};
 use crate::core::widget::operation::focusable::Focusable;
 use crate::core::widget::tree::{self, Tree};
 use crate::core::window;
-use crate::core::theme::palette;
 use crate::core::{
     self, Color, Element, Event, Length, Pixels, Point, Rectangle, Shadow, Shell, Size, Theme,
     Widget,
@@ -763,7 +763,8 @@ pub fn default(theme: &Theme, status: Status) -> Style {
             border_color: match status {
                 Status::Focused => {
                     let accent = palette.primary.strong.color;
-                    palette::focus_border_color(color, palette.primary.base.text, accent)
+                    let page_bg = palette.background.base.color;
+                    palette::focus_border_color(color, accent, page_bg)
                 }
                 _ => Color::TRANSPARENT,
             },
@@ -772,7 +773,10 @@ pub fn default(theme: &Theme, status: Status) -> Style {
                 _ => 0.0,
             },
             shadow: match status {
-                Status::Focused => palette::focus_shadow(palette.primary.strong.color),
+                Status::Focused => palette::focus_shadow(
+                    palette.primary.strong.color,
+                    palette.background.base.color,
+                ),
                 _ => Shadow::default(),
             },
         },

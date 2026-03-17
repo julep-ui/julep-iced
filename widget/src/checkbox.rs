@@ -677,16 +677,21 @@ pub fn primary(theme: &Theme, status: Status) -> Style {
                 palette.primary.base,
                 is_checked,
             );
-            let widget_pair = if is_checked { palette.primary.base } else { palette.background.base };
             let accent = palette.primary.strong.color;
+            let page_bg = palette.background.base.color;
+            let widget_bg = if is_checked {
+                palette.primary.base.color
+            } else {
+                palette.background.base.color
+            };
 
             Style {
                 border: Border {
-                    color: palette::focus_border_color(widget_pair.color, widget_pair.text, accent),
+                    color: palette::focus_border_color(widget_bg, accent, page_bg),
                     width: 2.0,
                     ..base.border
                 },
-                shadow: palette::focus_shadow(accent),
+                shadow: palette::focus_shadow(accent, page_bg),
                 ..base
             }
         }
@@ -727,16 +732,21 @@ pub fn secondary(theme: &Theme, status: Status) -> Style {
                 palette.background.strong,
                 is_checked,
             );
-            let widget_pair = if is_checked { palette.background.strong } else { palette.background.base };
             let accent = palette.primary.strong.color;
+            let page_bg = palette.background.base.color;
+            let widget_bg = if is_checked {
+                palette.background.strong.color
+            } else {
+                palette.background.base.color
+            };
 
             Style {
                 border: Border {
-                    color: palette::focus_border_color(widget_pair.color, widget_pair.text, accent),
+                    color: palette::focus_border_color(widget_bg, accent, page_bg),
                     width: 2.0,
                     ..base.border
                 },
-                shadow: palette::focus_shadow(accent),
+                shadow: palette::focus_shadow(accent, page_bg),
                 ..base
             }
         }
@@ -777,16 +787,21 @@ pub fn success(theme: &Theme, status: Status) -> Style {
                 palette.success.base,
                 is_checked,
             );
-            let widget_pair = if is_checked { palette.success.base } else { palette.background.base };
             let accent = palette.primary.strong.color;
+            let page_bg = palette.background.base.color;
+            let widget_bg = if is_checked {
+                palette.success.base.color
+            } else {
+                palette.background.base.color
+            };
 
             Style {
                 border: Border {
-                    color: palette::focus_border_color(widget_pair.color, widget_pair.text, accent),
+                    color: palette::focus_border_color(widget_bg, accent, page_bg),
                     width: 2.0,
                     ..base.border
                 },
-                shadow: palette::focus_shadow(accent),
+                shadow: palette::focus_shadow(accent, page_bg),
                 ..base
             }
         }
@@ -827,16 +842,21 @@ pub fn danger(theme: &Theme, status: Status) -> Style {
                 palette.danger.base,
                 is_checked,
             );
-            let widget_pair = if is_checked { palette.danger.base } else { palette.background.base };
             let accent = palette.primary.strong.color;
+            let page_bg = palette.background.base.color;
+            let widget_bg = if is_checked {
+                palette.danger.base.color
+            } else {
+                palette.background.base.color
+            };
 
             Style {
                 border: Border {
-                    color: palette::focus_border_color(widget_pair.color, widget_pair.text, accent),
+                    color: palette::focus_border_color(widget_bg, accent, page_bg),
                     width: 2.0,
                     ..base.border
                 },
-                shadow: palette::focus_shadow(accent),
+                shadow: palette::focus_shadow(accent, page_bg),
                 ..base
             }
         }

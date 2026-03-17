@@ -38,13 +38,13 @@ use crate::core::layout;
 use crate::core::mouse;
 use crate::core::renderer;
 use crate::core::text;
+use crate::core::theme::palette;
 use crate::core::touch;
 use crate::core::widget;
 use crate::core::widget::operation::accessible::{Accessible, Role};
 use crate::core::widget::operation::focusable::{self, Focusable};
 use crate::core::widget::tree::{self, Tree};
 use crate::core::window;
-use crate::core::theme::palette;
 use crate::core::{
     Background, Border, Color, Element, Event, Layout, Length, Pixels, Rectangle, Shadow, Shell,
     Size, Theme, Widget,
@@ -704,13 +704,23 @@ pub fn default(theme: &Theme, status: Status) -> Style {
         Status::Disabled { .. } => palette.background.weakest.color,
     };
 
+    let page_bg = palette.background.base.color;
+    let accent = palette.primary.strong.color;
+
     let (background_border_width, background_border_color) = match status {
-        Status::Focused { .. } => (2.0, palette.primary.strong.color),
+        Status::Focused { is_toggled } => {
+            let widget_bg = if is_toggled {
+                palette.primary.base.color
+            } else {
+                palette.background.strong.color
+            };
+            (2.0, palette::focus_border_color(widget_bg, accent, page_bg))
+        }
         _ => (0.0, Color::TRANSPARENT),
     };
 
     let shadow = match status {
-        Status::Focused { .. } => palette::focus_shadow(palette.primary.strong.color),
+        Status::Focused { .. } => palette::focus_shadow(accent, page_bg),
         _ => Shadow::default(),
     };
 

@@ -34,13 +34,13 @@ use crate::core::keyboard::key::{self, Key};
 use crate::core::layout;
 use crate::core::mouse;
 use crate::core::renderer;
+use crate::core::theme::palette;
 use crate::core::touch;
 use crate::core::widget::Operation;
 use crate::core::widget::operation::accessible::{Accessible, Role, Value};
 use crate::core::widget::operation::focusable::Focusable;
 use crate::core::widget::tree::{self, Tree};
 use crate::core::window;
-use crate::core::theme::palette;
 use crate::core::{
     self, Background, Color, Element, Event, Layout, Length, Pixels, Point, Rectangle, Shadow,
     Shell, Size, Theme, Widget,
@@ -809,10 +809,11 @@ pub fn default(theme: &Theme, status: Status) -> Style {
     let (handle_border_color, handle_border_width, handle_shadow) = match status {
         Status::Focused => {
             let accent = palette.primary.strong.color;
+            let page_bg = palette.background.base.color;
             (
-                palette::focus_border_color(color, palette.primary.base.text, accent),
+                palette::focus_border_color(color, accent, page_bg),
                 2.0,
-                palette::focus_shadow(accent),
+                palette::focus_shadow(accent, page_bg),
             )
         }
         _ => (Color::TRANSPARENT, 0.0, Shadow::default()),

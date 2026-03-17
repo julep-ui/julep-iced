@@ -70,13 +70,13 @@ use crate::core::overlay;
 use crate::core::renderer;
 use crate::core::text::paragraph;
 use crate::core::text::{self, Text};
+use crate::core::theme::palette;
 use crate::core::touch;
 use crate::core::widget::operation::Operation;
 use crate::core::widget::operation::accessible::{Accessible, HasPopup, Role, Value};
 use crate::core::widget::operation::focusable::{self, Focusable};
 use crate::core::widget::tree::{self, Tree};
 use crate::core::window;
-use crate::core::theme::palette;
 use crate::core::{
     Background, Border, Color, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle,
     Shadow, Shell, Size, Theme, Vector, Widget,
@@ -1081,19 +1081,22 @@ pub fn default(theme: &Theme, status: Status) -> Style {
             },
             ..active
         },
-        Status::Focused => Style {
-            border: Border {
-                color: palette::focus_border_color(
-                    palette.background.weak.color,
-                    palette.background.weak.text,
-                    palette.primary.strong.color,
-                ),
-                width: 2.0,
-                ..active.border
-            },
-            shadow: palette::focus_shadow(palette.primary.strong.color),
-            ..active
-        },
+        Status::Focused => {
+            let page_bg = palette.background.base.color;
+            Style {
+                border: Border {
+                    color: palette::focus_border_color(
+                        palette.background.weak.color,
+                        palette.primary.strong.color,
+                        page_bg,
+                    ),
+                    width: 2.0,
+                    ..active.border
+                },
+                shadow: palette::focus_shadow_subtle(palette.primary.strong.color, page_bg),
+                ..active
+            }
+        }
         Status::Disabled => Style {
             text_color: palette.background.strongest.color,
             background: palette.background.weaker.color.into(),

@@ -50,6 +50,7 @@ use crate::core::mouse::{self, click};
 use crate::core::renderer;
 use crate::core::text::paragraph::{self, Paragraph as _};
 use crate::core::text::{self, Text};
+use crate::core::theme::palette;
 use crate::core::time::{Duration, Instant};
 use crate::core::touch;
 use crate::core::widget;
@@ -57,7 +58,6 @@ use crate::core::widget::operation::accessible::{Accessible, Role, Value as Acce
 use crate::core::widget::operation::{self, Operation};
 use crate::core::widget::tree::{self, Tree};
 use crate::core::window;
-use crate::core::theme::palette;
 use crate::core::{
     Alignment, Background, Border, Color, Element, Event, InputMethod, Layout, Length, Padding,
     Pixels, Point, Rectangle, Shadow, Shell, Size, Theme, Vector, Widget,
@@ -1716,15 +1716,26 @@ pub fn default(theme: &Theme, status: Status) -> Style {
             },
             ..active
         },
-        Status::Focused { .. } => Style {
-            border: Border {
-                color: palette.primary.strong.color,
-                width: 2.0,
-                ..active.border
-            },
-            shadow: palette::focus_shadow(palette.primary.strong.color),
-            ..active
-        },
+        Status::Focused { .. } => {
+            let page_bg = palette.background.base.color;
+            let accent = palette.primary.strong.color;
+            Style {
+                border: Border {
+                    color: palette::focus_border_color(
+                        match active.background {
+                            Background::Color(c) => c,
+                            Background::Gradient(_) => Color::TRANSPARENT,
+                        },
+                        accent,
+                        page_bg,
+                    ),
+                    width: 2.0,
+                    ..active.border
+                },
+                shadow: palette::focus_shadow_subtle(accent, page_bg),
+                ..active
+            }
+        }
         Status::Disabled => Style {
             background: Background::Color(palette.background.weak.color),
             value: active.placeholder,
