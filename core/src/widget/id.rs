@@ -23,6 +23,15 @@ impl Id {
     }
 }
 
+impl std::fmt::Display for Id {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.0 {
+            Internal::Unique(n) => write!(f, "__unique_{n}"),
+            Internal::Custom(name) => f.write_str(name),
+        }
+    }
+}
+
 impl From<&'static str> for Id {
     fn from(value: &'static str) -> Self {
         Self::new(value)
