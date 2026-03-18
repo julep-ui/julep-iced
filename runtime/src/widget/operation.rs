@@ -116,8 +116,40 @@ pub fn select_range<T>(id: impl Into<Id>, start: usize, end: usize) -> Task<T> {
 
 /// Returns the [`Id`] of the currently focused widget, if any.
 ///
-/// The resulting [`Task`] produces the focused widget's [`Id`].
-/// If no widget is focused, the task produces no value.
-pub fn find_focused() -> Task<Id> {
-    task::widget(operation::focusable::find_focused())
+/// The resulting [`Task`] always produces a value: `Some(id)` when a
+/// widget with an ID is focused, `None` otherwise. This differs from
+/// most widget operations (which produce no value on miss) because
+/// callers need to distinguish "nothing focused" from "still waiting."
+pub fn find_focused() -> Task<Option<Id>> {
+    use crate::core::widget::operation::{Focusable, Outcome};
+    use crate::core::widget::Operation;
+    use crate::core::Rectangle;
+
+    struct FindFocusedOption {
+        focused: Option<Id>,
+    }
+
+    impl Operation<Option<Id>> for FindFocusedOption {
+        fn focusable(
+            &mut self,
+            id: Option<&Id>,
+            _bounds: Rectangle,
+            state: &mut dyn Focusable,
+        ) {
+            if state.is_focused() {
+                self.focused = id.cloned();
+            }
+        }
+
+        fn traverse(&mut self, operate: &mut dyn FnMut(&mut dyn Operation<Option<Id>>)) {
+            operate(self);
+        }
+
+        fn finish(&self) -> Outcome<Option<Id>> {
+            // Always produce a value so the Task always fires .map().
+            Outcome::Some(self.focused.clone())
+        }
+    }
+
+    task::widget(FindFocusedOption { focused: None })
 }
