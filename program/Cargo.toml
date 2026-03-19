@@ -1,6 +1,6 @@
 [package]
-name = "julep-iced-program"
-description = "Vendored fork of iced_program for Julep UI -- The definition of an iced program"
+name = "toddy-iced-program"
+description = "Vendored fork of iced_program for Toddy UI -- The definition of an iced program"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true

@@ -1,6 +1,6 @@
 [package]
-name = "julep-iced-beacon"
-description = "Vendored fork of iced_beacon for Julep UI -- A client/server protocol to monitor and supervise iced applications"
+name = "toddy-iced-beacon"
+description = "Vendored fork of iced_beacon for Toddy UI -- A client/server protocol to monitor and supervise iced applications"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

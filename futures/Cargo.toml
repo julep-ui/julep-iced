@@ -1,6 +1,6 @@
 [package]
-name = "julep-iced-futures"
-description = "Vendored fork of iced_futures for Julep UI -- Commands, subscriptions, and future executors for iced"
+name = "toddy-iced-futures"
+description = "Vendored fork of iced_futures for Toddy UI -- Commands, subscriptions, and future executors for iced"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

@@ -1,6 +1,6 @@
 [package]
-name = "julep-iced"
-description = "Vendored fork of iced for Julep UI -- a cross-platform GUI library inspired by Elm"
+name = "toddy-iced"
+description = "Vendored fork of iced for Toddy UI -- a cross-platform GUI library inspired by Elm"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -168,31 +168,31 @@ version = "0.6.1"
 authors = ["Héctor Ramón Jiménez <hector@hecrj.dev>", "Daniel Hedlund <daniel@digitree.org>"]
 edition = "2024"
 license = "MIT"
-repository = "https://github.com/julep-ui/julep-iced"
-homepage = "https://github.com/julep-ui/julep-iced"
+repository = "https://github.com/toddy-ui/toddy-iced"
+homepage = "https://github.com/toddy-ui/toddy-iced"
 categories = ["gui"]
 keywords = ["gui", "ui", "graphics", "interface", "accessibility"]
 rust-version = "1.92"
 
 [workspace.dependencies]
-iced = { version = "0.6.1", path = ".", package = "julep-iced" }
-iced_beacon = { version = "0.6.1", path = "beacon", package = "julep-iced-beacon" }
-iced_core = { version = "0.6.1", path = "core", package = "julep-iced-core" }
-iced_debug = { version = "0.6.1", path = "debug", package = "julep-iced-debug" }
-iced_devtools = { version = "0.6.1", path = "devtools", package = "julep-iced-devtools" }
-iced_futures = { version = "0.6.1", path = "futures", package = "julep-iced-futures" }
-iced_graphics = { version = "0.6.1", path = "graphics", package = "julep-iced-graphics" }
-iced_highlighter = { version = "0.6.1", path = "highlighter", package = "julep-iced-highlighter" }
-iced_program = { version = "0.6.1", path = "program", package = "julep-iced-program" }
-iced_renderer = { version = "0.6.1", path = "renderer", package = "julep-iced-renderer" }
-iced_runtime = { version = "0.6.1", path = "runtime", package = "julep-iced-runtime" }
-iced_selector = { version = "0.6.1", path = "selector", package = "julep-iced-selector" }
-iced_test = { version = "0.6.1", path = "test", package = "julep-iced-test" }
-iced_tester = { version = "0.6.1", path = "tester", package = "julep-iced-tester" }
-iced_tiny_skia = { version = "0.6.1", path = "tiny_skia", default-features = false, package = "julep-iced-tiny-skia" }
-iced_wgpu = { version = "0.6.1", path = "wgpu", default-features = false, package = "julep-iced-wgpu" }
-iced_widget = { version = "0.6.1", path = "widget", package = "julep-iced-widget" }
-iced_winit = { version = "0.6.1", path = "winit", default-features = false, package = "julep-iced-winit" }
+iced = { version = "0.6.1", path = ".", package = "toddy-iced" }
+iced_beacon = { version = "0.6.1", path = "beacon", package = "toddy-iced-beacon" }
+iced_core = { version = "0.6.1", path = "core", package = "toddy-iced-core" }
+iced_debug = { version = "0.6.1", path = "debug", package = "toddy-iced-debug" }
+iced_devtools = { version = "0.6.1", path = "devtools", package = "toddy-iced-devtools" }
+iced_futures = { version = "0.6.1", path = "futures", package = "toddy-iced-futures" }
+iced_graphics = { version = "0.6.1", path = "graphics", package = "toddy-iced-graphics" }
+iced_highlighter = { version = "0.6.1", path = "highlighter", package = "toddy-iced-highlighter" }
+iced_program = { version = "0.6.1", path = "program", package = "toddy-iced-program" }
+iced_renderer = { version = "0.6.1", path = "renderer", package = "toddy-iced-renderer" }
+iced_runtime = { version = "0.6.1", path = "runtime", package = "toddy-iced-runtime" }
+iced_selector = { version = "0.6.1", path = "selector", package = "toddy-iced-selector" }
+iced_test = { version = "0.6.1", path = "test", package = "toddy-iced-test" }
+iced_tester = { version = "0.6.1", path = "tester", package = "toddy-iced-tester" }
+iced_tiny_skia = { version = "0.6.1", path = "tiny_skia", default-features = false, package = "toddy-iced-tiny-skia" }
+iced_wgpu = { version = "0.6.1", path = "wgpu", default-features = false, package = "toddy-iced-wgpu" }
+iced_widget = { version = "0.6.1", path = "widget", package = "toddy-iced-widget" }
+iced_winit = { version = "0.6.1", path = "winit", default-features = false, package = "toddy-iced-winit" }
 
 accesskit = "0.24"
 accesskit_winit = "0.32.2"
@@ -203,7 +203,7 @@ bytemuck = { version = "1.0", features = ["derive"] }
 bytes = "1.6"
 cargo-hot = { version = "0.1", package = "cargo-hot-protocol" }
 cosmic-text = "0.18"
-cryoglyph = { version = "0.6.1", path = "cryoglyph", package = "julep-iced-cryoglyph" }
+cryoglyph = { version = "0.6.1", path = "cryoglyph", package = "toddy-iced-cryoglyph" }
 futures = { version = "0.3", default-features = false, features = ["std", "async-await"] }
 glam = "0.25"
 guillotiere = "0.6"

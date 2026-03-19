@@ -15,21 +15,21 @@ jobs:
         RUSTDOCFLAGS="--cfg docsrs" \
           cargo doc --no-deps --all-features \
           -p futures-core \
-          -p julep-iced-beacon \
-          -p julep-iced-core \
-          -p julep-iced-debug \
-          -p julep-iced-devtools \
-          -p julep-iced-futures \
-          -p julep-iced-graphics \
-          -p julep-iced-highlighter \
-          -p julep-iced-renderer \
-          -p julep-iced-runtime \
-          -p julep-iced-tiny-skia \
-          -p julep-iced-wgpu \
-          -p julep-iced-widget \
-          -p julep-iced-winit \
-          -p julep-iced-test \
-          -p julep-iced
+          -p toddy-iced-beacon \
+          -p toddy-iced-core \
+          -p toddy-iced-debug \
+          -p toddy-iced-devtools \
+          -p toddy-iced-futures \
+          -p toddy-iced-graphics \
+          -p toddy-iced-highlighter \
+          -p toddy-iced-renderer \
+          -p toddy-iced-runtime \
+          -p toddy-iced-tiny-skia \
+          -p toddy-iced-wgpu \
+          -p toddy-iced-widget \
+          -p toddy-iced-winit \
+          -p toddy-iced-test \
+          -p toddy-iced
     - name: Copy redirect file as index.html
       run: cp docs/redirect.html target/doc/index.html
     - name: Publish documentation

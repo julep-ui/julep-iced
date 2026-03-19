@@ -1,6 +1,6 @@
 [package]
-name = "julep-iced-widget"
-description = "Vendored fork of iced_widget for Julep UI -- The built-in widgets for iced"
+name = "toddy-iced-widget"
+description = "Vendored fork of iced_widget for Toddy UI -- The built-in widgets for iced"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

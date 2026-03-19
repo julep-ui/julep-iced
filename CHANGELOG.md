@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to julep-iced will be documented in this file.
+All notable changes to toddy-iced will be documented in this file.
 This changelog tracks changes **specific to this fork**. For upstream
 iced changes, see the
 [iced changelog](https://github.com/iced-rs/iced/blob/master/CHANGELOG.md).
@@ -86,7 +86,7 @@ Based on [iced 0.14.0](https://github.com/iced-rs/iced/blob/master/CHANGELOG.md#
   hardcoded values
 
 ### Changed
-- All crates renamed to `julep-iced-*` for crates.io publishing
+- All crates renamed to `toddy-iced-*` for crates.io publishing
 - Switched from iced-rs winit fork to upstream winit
 
 ### Removed

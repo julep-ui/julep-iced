@@ -12,7 +12,7 @@ jobs:
         targets: wasm32-unknown-unknown
     - uses: actions/checkout@master
     - name: Run checks
-      run: cargo check --package julep-iced --target wasm32-unknown-unknown
+      run: cargo check --package toddy-iced --target wasm32-unknown-unknown
     - name: Check compilation of `tour` example
       run: cargo build --package tour --target wasm32-unknown-unknown
     - name: Check compilation of `todos` example
@@ -23,5 +23,5 @@ jobs:
     steps:
     - uses: hecrj/setup-rust-action@v2
     - uses: actions/checkout@master
-    - name: Check standalone `julep-iced-widget` crate
-      run: cargo check --package julep-iced-widget --features image,svg,canvas
+    - name: Check standalone `toddy-iced-widget` crate
+      run: cargo check --package toddy-iced-widget --features image,svg,canvas

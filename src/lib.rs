@@ -1,6 +1,6 @@
-//! **julep-iced** is a vendored fork of [iced](https://github.com/iced-rs/iced)
-//! maintained for the [Julep](https://github.com/julep-ui/julep) project.
-//! See the [repository](https://github.com/julep-ui/julep-iced) for what's
+//! **toddy-iced** is a vendored fork of [iced](https://github.com/iced-rs/iced)
+//! maintained for the [Toddy](https://github.com/toddy-ui/toddy) project.
+//! See the [repository](https://github.com/toddy-ui/toddy-iced) for what's
 //! different from upstream.
 //!
 //! ---
