@@ -979,6 +979,7 @@ mod tests {
     // Run with: WAYLAND_DISPLAY=... cargo test --features a11y
     // Or use headless weston: weston --backend=headless
 
+    #[cfg(target_os = "linux")]
     /// Runs a closure inside a winit event loop with access to
     /// [`ActiveEventLoop`]. Requires a running Wayland compositor
     /// (e.g. headless weston via `WAYLAND_DISPLAY`).
@@ -1014,12 +1015,14 @@ mod tests {
         let _ = event_loop.run_app(&mut TestApp(Some(f)));
     }
 
+    #[cfg(target_os = "linux")]
     /// Returns true if a Wayland compositor is available for
     /// integration tests.
     fn has_wayland() -> bool {
         std::env::var_os("WAYLAND_DISPLAY").is_some()
     }
 
+    #[cfg(target_os = "linux")]
     /// Integration test for the full adapter lifecycle. Combined into
     /// a single test because winit only allows one event loop per
     /// process.
