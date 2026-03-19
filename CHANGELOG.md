@@ -9,6 +9,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-03-19
+
+### Added
+- `Display` impl for `widget::Id`
+
+### Fixed
+- `find_focused` now returns `Task<Option<Id>>` instead of `Task<Id>`,
+  correctly representing the case where no widget has focus
+
+### Changed
+- **Breaking:** All crates renamed from `julep-iced-*` to `toddy-iced-*`
+- **Breaking:** `find_focused` return type changed from `Task<Id>` to
+  `Task<Option<Id>>`
+
 ## [0.6.1] - 2026-03-17
 
 ### Added
