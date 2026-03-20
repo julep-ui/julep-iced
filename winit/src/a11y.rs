@@ -729,6 +729,8 @@ impl Operation for TreeBuilder {
                 IcedHasPopup::Listbox => accesskit::HasPopup::Listbox,
                 IcedHasPopup::Menu => accesskit::HasPopup::Menu,
                 IcedHasPopup::Dialog => accesskit::HasPopup::Dialog,
+                IcedHasPopup::Tree => accesskit::HasPopup::Tree,
+                IcedHasPopup::Grid => accesskit::HasPopup::Grid,
             });
         }
         if accessible.invalid {

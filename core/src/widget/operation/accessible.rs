@@ -160,6 +160,10 @@ pub enum HasPopup {
     Menu,
     /// A dialog popup (used by modal triggers).
     Dialog,
+    /// A tree popup (used by tree-view triggers).
+    Tree,
+    /// A grid popup (used by grid-view triggers).
+    Grid,
 }
 
 /// Accessibility metadata for a single widget.

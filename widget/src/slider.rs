@@ -37,7 +37,7 @@ use crate::core::renderer;
 use crate::core::theme::palette;
 use crate::core::touch;
 use crate::core::widget::Operation;
-use crate::core::widget::operation::accessible::{Accessible, Role, Value};
+use crate::core::widget::operation::accessible::{Accessible, Orientation, Role, Value};
 use crate::core::widget::operation::focusable::Focusable;
 use crate::core::widget::tree::{self, Tree};
 use crate::core::window;
@@ -264,6 +264,7 @@ where
                     max: (*self.range.end()).into(),
                     step: Some(self.step.into()),
                 }),
+                orientation: Some(Orientation::Horizontal),
                 ..Accessible::default()
             },
         );
