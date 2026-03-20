@@ -97,6 +97,7 @@ where
     on_release: Option<Message>,
     width: Length,
     height: f32,
+    label: Option<String>,
     class: Theme::Class<'a>,
     status: Option<Status>,
 }
@@ -144,6 +145,7 @@ where
             on_release: None,
             width: Length::Fill,
             height: Self::DEFAULT_HEIGHT,
+            label: None,
             class: Theme::default(),
             status: None,
         }
@@ -191,6 +193,14 @@ where
     /// If set, this value is used as the step while the shift key is pressed.
     pub fn shift_step(mut self, shift_step: impl Into<T>) -> Self {
         self.shift_step = Some(shift_step.into());
+        self
+    }
+
+    /// Sets the accessible label for the [`Slider`].
+    ///
+    /// This is announced by screen readers as the name of the slider.
+    pub fn label(mut self, label: impl Into<String>) -> Self {
+        self.label = Some(label.into());
         self
     }
 
@@ -258,6 +268,7 @@ where
             layout.bounds(),
             &Accessible {
                 role: Role::Slider,
+                label: self.label.as_deref(),
                 value: Some(Value::Numeric {
                     current: self.value.into(),
                     min: (*self.range.start()).into(),
