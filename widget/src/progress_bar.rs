@@ -62,6 +62,7 @@ where
     length: Length,
     girth: Length,
     is_vertical: bool,
+    label: Option<String>,
     class: Theme::Class<'a>,
 }
 
@@ -84,6 +85,7 @@ where
             length: Length::Fill,
             girth: Length::from(Self::DEFAULT_GIRTH),
             is_vertical: false,
+            label: None,
             class: Theme::default(),
         }
     }
@@ -105,6 +107,14 @@ where
     /// By default, a [`ProgressBar`] is horizontal.
     pub fn vertical(mut self) -> Self {
         self.is_vertical = true;
+        self
+    }
+
+    /// Sets the accessible label for the [`ProgressBar`].
+    ///
+    /// This is announced by screen readers as the name of the progress bar.
+    pub fn label(mut self, label: impl Into<String>) -> Self {
+        self.label = Some(label.into());
         self
     }
 
@@ -176,6 +186,7 @@ where
             layout.bounds(),
             &Accessible {
                 role: Role::ProgressIndicator,
+                label: self.label.as_deref(),
                 value: Some(Value::Numeric {
                     current: self.value as f64,
                     min: *self.range.start() as f64,
