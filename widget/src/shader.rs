@@ -7,6 +7,8 @@ use crate::core::event;
 use crate::core::layout::{self, Layout};
 use crate::core::mouse;
 use crate::core::renderer;
+use crate::core::widget::Operation;
+use crate::core::widget::operation::accessible::{Accessible, Role};
 use crate::core::widget::tree::{self, Tree};
 use crate::core::widget::{self, Widget};
 use crate::core::{Element, Event, Length, Rectangle, Shell, Size};
@@ -26,6 +28,8 @@ pub struct Shader<Message, P: Program<Message>> {
     width: Length,
     height: Length,
     program: P,
+    alt: Option<String>,
+    description: Option<String>,
     _message: PhantomData<Message>,
 }
 
@@ -36,6 +40,8 @@ impl<Message, P: Program<Message>> Shader<Message, P> {
             width: Length::Fixed(100.0),
             height: Length::Fixed(100.0),
             program,
+            alt: None,
+            description: None,
             _message: PhantomData,
         }
     }
@@ -49,6 +55,23 @@ impl<Message, P: Program<Message>> Shader<Message, P> {
     /// Set the `height` of the custom [`Shader`].
     pub fn height(mut self, height: impl Into<Length>) -> Self {
         self.height = height.into();
+        self
+    }
+
+    /// Sets the alt text of the [`Shader`].
+    ///
+    /// This is the accessible name announced by screen readers.
+    pub fn alt(mut self, text: impl Into<String>) -> Self {
+        self.alt = Some(text.into());
+        self
+    }
+
+    /// Sets an extended description of the [`Shader`].
+    ///
+    /// This supplements the alt text with additional context for
+    /// assistive technology.
+    pub fn description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
         self
     }
 }
@@ -110,6 +133,25 @@ where
                 shell.capture_event();
             }
         }
+    }
+
+    fn operate(
+        &mut self,
+        _tree: &mut Tree,
+        layout: Layout<'_>,
+        _renderer: &Renderer,
+        operation: &mut dyn Operation,
+    ) {
+        operation.accessible(
+            None,
+            layout.bounds(),
+            &Accessible {
+                role: Role::Image,
+                label: self.alt.as_deref(),
+                description: self.description.as_deref(),
+                ..Accessible::default()
+            },
+        );
     }
 
     fn mouse_interaction(

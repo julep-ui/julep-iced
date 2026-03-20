@@ -144,6 +144,8 @@ where
     width: Length,
     height: Length,
     program: P,
+    alt: Option<String>,
+    description: Option<String>,
     message_: PhantomData<Message>,
     theme_: PhantomData<Theme>,
     renderer_: PhantomData<Renderer>,
@@ -163,6 +165,8 @@ where
             width: Length::Fixed(Self::DEFAULT_SIZE),
             height: Length::Fixed(Self::DEFAULT_SIZE),
             program,
+            alt: None,
+            description: None,
             message_: PhantomData,
             theme_: PhantomData,
             renderer_: PhantomData,
@@ -179,6 +183,23 @@ where
     /// Sets the height of the [`Canvas`].
     pub fn height(mut self, height: impl Into<Length>) -> Self {
         self.height = height.into();
+        self
+    }
+
+    /// Sets the alt text of the [`Canvas`].
+    ///
+    /// This is the accessible name announced by screen readers.
+    pub fn alt(mut self, text: impl Into<String>) -> Self {
+        self.alt = Some(text.into());
+        self
+    }
+
+    /// Sets an extended description of the [`Canvas`].
+    ///
+    /// This supplements the alt text with additional context for
+    /// assistive technology.
+    pub fn description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
         self
     }
 }
@@ -312,6 +333,8 @@ where
             layout.bounds(),
             &Accessible {
                 role: Role::Image,
+                label: self.alt.as_deref(),
+                description: self.description.as_deref(),
                 ..Accessible::default()
             },
         );

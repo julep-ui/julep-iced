@@ -67,6 +67,8 @@ where
 {
     data: &'a Data,
     cell_size: f32,
+    alt: Option<String>,
+    description: Option<String>,
     class: Theme::Class<'a>,
 }
 
@@ -79,6 +81,8 @@ where
         Self {
             data,
             cell_size: DEFAULT_CELL_SIZE,
+            alt: None,
+            description: None,
             class: Theme::default(),
         }
     }
@@ -93,6 +97,24 @@ where
     pub fn total_size(mut self, total_size: impl Into<Pixels>) -> Self {
         self.cell_size = total_size.into().0 / (self.data.width + 2 * QUIET_ZONE) as f32;
 
+        self
+    }
+
+    /// Sets the alt text of the [`QRCode`].
+    ///
+    /// This is the accessible name announced by screen readers. It should
+    /// be a short phrase describing the QR code content.
+    pub fn alt(mut self, text: impl Into<String>) -> Self {
+        self.alt = Some(text.into());
+        self
+    }
+
+    /// Sets an extended description of the [`QRCode`].
+    ///
+    /// This supplements the alt text with additional context for
+    /// assistive technology.
+    pub fn description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
         self
     }
 
@@ -221,6 +243,8 @@ where
             layout.bounds(),
             &Accessible {
                 role: Role::Image,
+                label: self.alt.as_deref(),
+                description: self.description.as_deref(),
                 ..Accessible::default()
             },
         );
