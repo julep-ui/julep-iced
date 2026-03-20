@@ -93,6 +93,12 @@ pub enum Role {
     TabPanel,
     /// A data table.
     Table,
+    /// A row within a data table.
+    Row,
+    /// A cell within a table row.
+    Cell,
+    /// A column header cell within a table.
+    ColumnHeader,
     /// A text input field.
     TextInput,
     /// A toolbar container.
