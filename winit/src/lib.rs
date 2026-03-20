@@ -1155,11 +1155,13 @@ async fn run_instance<P>(
                                         if let Some(bounds) = bounds {
                                             let center = bounds.center();
                                             window.state.set_cursor_position(center);
-                                            for event in a11y::synthetic_arrow_key(
+                                            if let Some(key_events) = a11y::synthetic_arrow_key(
                                                 center,
                                                 crate::core::keyboard::key::Named::ArrowUp,
                                             ) {
-                                                events.push((id, event));
+                                                for event in key_events {
+                                                    events.push((id, event));
+                                                }
                                             }
                                         }
                                     }
@@ -1167,11 +1169,13 @@ async fn run_instance<P>(
                                         if let Some(bounds) = bounds {
                                             let center = bounds.center();
                                             window.state.set_cursor_position(center);
-                                            for event in a11y::synthetic_arrow_key(
+                                            if let Some(key_events) = a11y::synthetic_arrow_key(
                                                 center,
                                                 crate::core::keyboard::key::Named::ArrowDown,
                                             ) {
-                                                events.push((id, event));
+                                                for event in key_events {
+                                                    events.push((id, event));
+                                                }
                                             }
                                         }
                                     }

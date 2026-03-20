@@ -216,13 +216,15 @@ pub(crate) fn synthetic_click(center: Point) -> [Event; 3] {
 /// press at `center`.
 ///
 /// Sequence: CursorMoved -> KeyPressed(key) -> KeyReleased(key).
-pub(crate) fn synthetic_arrow_key(center: Point, key: keyboard::key::Named) -> [Event; 3] {
-    [
+/// Returns `None` if the key has no known physical code mapping.
+pub(crate) fn synthetic_arrow_key(center: Point, key: keyboard::key::Named) -> Option<[Event; 3]> {
+    let code = named_to_code(key)?;
+    Some([
         Event::Mouse(mouse::Event::CursorMoved { position: center }),
         Event::Keyboard(keyboard::Event::KeyPressed {
             key: keyboard::Key::Named(key),
             modified_key: keyboard::Key::Named(key),
-            physical_key: keyboard::key::Physical::Code(named_to_code(key)),
+            physical_key: keyboard::key::Physical::Code(code),
             location: keyboard::Location::Standard,
             modifiers: keyboard::Modifiers::empty(),
             text: None,
@@ -231,11 +233,11 @@ pub(crate) fn synthetic_arrow_key(center: Point, key: keyboard::key::Named) -> [
         Event::Keyboard(keyboard::Event::KeyReleased {
             key: keyboard::Key::Named(key),
             modified_key: keyboard::Key::Named(key),
-            physical_key: keyboard::key::Physical::Code(named_to_code(key)),
+            physical_key: keyboard::key::Physical::Code(code),
             location: keyboard::Location::Standard,
             modifiers: keyboard::Modifiers::empty(),
         }),
-    ]
+    ])
 }
 
 /// Produces a synthetic CursorMoved event to `center`.
@@ -243,14 +245,13 @@ pub(crate) fn synthetic_cursor_move(center: Point) -> Event {
     Event::Mouse(mouse::Event::CursorMoved { position: center })
 }
 
-fn named_to_code(key: keyboard::key::Named) -> keyboard::key::Code {
+fn named_to_code(key: keyboard::key::Named) -> Option<keyboard::key::Code> {
     match key {
-        keyboard::key::Named::ArrowUp => keyboard::key::Code::ArrowUp,
-        keyboard::key::Named::ArrowDown => keyboard::key::Code::ArrowDown,
-        keyboard::key::Named::ArrowLeft => keyboard::key::Code::ArrowLeft,
-        keyboard::key::Named::ArrowRight => keyboard::key::Code::ArrowRight,
-        // Only arrow keys are used for synthetic AT events.
-        _ => unreachable!("synthetic_arrow_key called with non-arrow key"),
+        keyboard::key::Named::ArrowUp => Some(keyboard::key::Code::ArrowUp),
+        keyboard::key::Named::ArrowDown => Some(keyboard::key::Code::ArrowDown),
+        keyboard::key::Named::ArrowLeft => Some(keyboard::key::Code::ArrowLeft),
+        keyboard::key::Named::ArrowRight => Some(keyboard::key::Code::ArrowRight),
+        _ => None,
     }
 }
 
