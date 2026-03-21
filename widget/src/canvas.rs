@@ -50,7 +50,7 @@
 //! ```
 mod program;
 
-pub use program::{AccessibleShape, Program};
+pub use program::Program;
 
 pub use crate::Action;
 pub use crate::core::event::Event;
@@ -204,6 +204,37 @@ where
     }
 }
 
+/// Canvas-level widget state wrapping the Program's state with focus
+/// tracking. The Program receives `&mut S` and never sees this wrapper.
+#[derive(Debug)]
+struct CanvasWidgetState<S: Default + 'static> {
+    program: S,
+    is_focused: bool,
+}
+
+impl<S: Default + 'static> Default for CanvasWidgetState<S> {
+    fn default() -> Self {
+        Self {
+            program: S::default(),
+            is_focused: false,
+        }
+    }
+}
+
+impl<S: Default + 'static> widget::operation::focusable::Focusable for CanvasWidgetState<S> {
+    fn is_focused(&self) -> bool {
+        self.is_focused
+    }
+
+    fn focus(&mut self) {
+        self.is_focused = true;
+    }
+
+    fn unfocus(&mut self) {
+        self.is_focused = false;
+    }
+}
+
 impl<P, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Canvas<P, Message, Theme, Renderer>
 where
@@ -212,11 +243,11 @@ where
 {
     fn tag(&self) -> tree::Tag {
         struct Tag<T>(T);
-        tree::Tag::of::<Tag<P::State>>()
+        tree::Tag::of::<Tag<CanvasWidgetState<P::State>>>()
     }
 
     fn state(&self) -> tree::State {
-        tree::State::new(P::State::default())
+        tree::State::new(CanvasWidgetState::<P::State>::default())
     }
 
     fn size(&self) -> Size<Length> {
@@ -247,11 +278,24 @@ where
     ) {
         let bounds = layout.bounds();
 
-        let state = tree.state.downcast_mut::<P::State>();
+        let widget_state = tree
+            .state
+            .downcast_mut::<CanvasWidgetState<P::State>>();
         let is_redraw_request =
             matches!(event, Event::Window(window::Event::RedrawRequested(_now)),);
 
-        if let Some(action) = self.program.update(state, event, bounds, cursor) {
+        // Only forward keyboard events to the Program when the canvas
+        // is focused in iced's focus system. Mouse events always pass
+        // through regardless of focus state.
+        let is_keyboard = matches!(event, Event::Keyboard(_));
+        if is_keyboard && !widget_state.is_focused {
+            return;
+        }
+
+        if let Some(action) =
+            self.program
+                .update(&mut widget_state.program, event, bounds, cursor)
+        {
             let (message, redraw_request, event_status) = action.into_inner();
 
             shell.request_redraw_at(redraw_request);
@@ -289,9 +333,12 @@ where
         _renderer: &Renderer,
     ) -> mouse::Interaction {
         let bounds = layout.bounds();
-        let state = tree.state.downcast_ref::<P::State>();
+        let widget_state = tree
+            .state
+            .downcast_ref::<CanvasWidgetState<P::State>>();
 
-        self.program.mouse_interaction(state, bounds, cursor)
+        self.program
+            .mouse_interaction(&widget_state.program, bounds, cursor)
     }
 
     fn draw(
@@ -310,10 +357,14 @@ where
             return;
         }
 
-        let state = tree.state.downcast_ref::<P::State>();
+        let widget_state = tree
+            .state
+            .downcast_ref::<CanvasWidgetState<P::State>>();
 
         renderer.with_translation(Vector::new(bounds.x, bounds.y), |renderer| {
-            let layers = self.program.draw(state, renderer, theme, bounds, cursor);
+            let layers =
+                self.program
+                    .draw(&widget_state.program, renderer, theme, bounds, cursor);
 
             for layer in layers {
                 renderer.draw_geometry(layer);
@@ -329,6 +380,11 @@ where
         operation: &mut dyn widget::Operation,
     ) {
         let bounds = layout.bounds();
+        let widget_state = tree
+            .state
+            .downcast_mut::<CanvasWidgetState<P::State>>();
+
+        // Canvas-level accessible node.
         operation.accessible(
             None,
             bounds,
@@ -340,32 +396,17 @@ where
             },
         );
 
-        // Emit accessible child nodes for interactive shapes.
-        let state = tree.state.downcast_ref::<P::State>();
-        let children = self.program.accessible_shapes(state, bounds);
-        if !children.is_empty() {
-            operation.traverse(&mut |child_op| {
-                for shape in &children {
-                    // Offset shape bounds by the canvas position.
-                    let shape_bounds = Rectangle {
-                        x: bounds.x + shape.bounds.x,
-                        y: bounds.y + shape.bounds.y,
-                        width: shape.bounds.width,
-                        height: shape.bounds.height,
-                    };
-                    child_op.accessible(
-                        None,
-                        shape_bounds,
-                        &Accessible {
-                            role: shape.role,
-                            label: shape.label.as_deref(),
-                            description: shape.description.as_deref(),
-                            ..Accessible::default()
-                        },
-                    );
-                }
-            });
+        // Focus integration: register as focusable when the Program
+        // has interactive elements that need keyboard access.
+        if self.program.is_focusable(&widget_state.program) {
+            operation.focusable(None, bounds, widget_state);
         }
+
+        // Accessible child nodes via the Program.
+        operation.traverse(&mut |child_op| {
+            self.program
+                .operate_accessible(&widget_state.program, bounds, child_op);
+        });
     }
 }
 

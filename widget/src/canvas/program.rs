@@ -2,25 +2,8 @@ use crate::Action;
 use crate::canvas::mouse;
 use crate::canvas::{Event, Geometry};
 use crate::core::Rectangle;
-use crate::core::widget::operation::accessible::Role;
+use crate::core::widget;
 use crate::graphics::geometry;
-
-/// An accessible child node within a canvas, returned by
-/// [`Program::accessible_shapes`].
-///
-/// Canvas programs with interactive shapes return these so the canvas
-/// widget can emit accessible child nodes in its `operate()` method.
-#[derive(Debug, Clone)]
-pub struct AccessibleShape {
-    /// Bounds of the shape within the canvas (canvas-local coordinates).
-    pub bounds: Rectangle,
-    /// Semantic role (e.g. Button, Link, Slider).
-    pub role: Role,
-    /// Human-readable label.
-    pub label: Option<String>,
-    /// Longer description.
-    pub description: Option<String>,
-}
 
 /// The state and logic of a [`Canvas`].
 ///
@@ -89,20 +72,36 @@ where
         mouse::Interaction::default()
     }
 
-    /// Returns accessible child nodes within the canvas.
+    /// Whether the canvas should participate in iced's focus system.
     ///
-    /// Called by the canvas widget's `operate()` method to emit
-    /// accessibility information for interactive shapes. Each returned
-    /// [`AccessibleShape`] becomes a focusable child node under the
-    /// canvas in the accessibility tree.
+    /// When true, the canvas becomes a Tab stop and keyboard events
+    /// are delivered to [`update`](Self::update). The canvas widget
+    /// manages focus state internally.
     ///
-    /// By default, returns an empty list (no accessible children).
-    fn accessible_shapes(
+    /// By default, returns false (canvas is not focusable).
+    fn is_focusable(&self, _state: &Self::State) -> bool {
+        false
+    }
+
+    /// Emit accessible child nodes within the canvas.
+    ///
+    /// Called by the canvas widget's `operate()` method inside a
+    /// `traverse()` block. The Program calls `operation.accessible()`
+    /// directly with full [`Accessible`] structs -- no intermediate
+    /// type or capability gap.
+    ///
+    /// For nested groups, recurse: emit the group's accessible node,
+    /// then call `operation.traverse()` for the group's children.
+    ///
+    /// By default, does nothing (no accessible children).
+    ///
+    /// [`Accessible`]: crate::core::widget::operation::accessible::Accessible
+    fn operate_accessible(
         &self,
         _state: &Self::State,
         _canvas_bounds: Rectangle,
-    ) -> Vec<AccessibleShape> {
-        Vec::new()
+        _operation: &mut dyn widget::Operation,
+    ) {
     }
 }
 
@@ -143,11 +142,16 @@ where
         T::mouse_interaction(self, state, bounds, cursor)
     }
 
-    fn accessible_shapes(
+    fn is_focusable(&self, state: &Self::State) -> bool {
+        T::is_focusable(self, state)
+    }
+
+    fn operate_accessible(
         &self,
         state: &Self::State,
         canvas_bounds: Rectangle,
-    ) -> Vec<AccessibleShape> {
-        T::accessible_shapes(self, state, canvas_bounds)
+        operation: &mut dyn widget::Operation,
+    ) {
+        T::operate_accessible(self, state, canvas_bounds, operation)
     }
 }
