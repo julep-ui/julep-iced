@@ -1,7 +1,7 @@
-# toddy-iced
+# plushie-iced
 
 Vendored fork of [iced](https://github.com/iced-rs/iced) maintained
-for the [Toddy UI](https://github.com/toddy-ui) project. Tracks
+for the [Plushie UI](https://github.com/plushie-ui) project. Tracks
 iced's master branch with additional features. Version numbers are
 independent of upstream iced releases.
 
@@ -69,7 +69,7 @@ independent of upstream iced releases.
 
 ### Crate naming
 
-All crates are published under a `toddy-iced-` prefix. Cargo's
+All crates are published under a `plushie-iced-` prefix. Cargo's
 `package` aliasing means Rust source code still uses `use iced::*`
 -- the renaming is entirely in Cargo.toml.
 

@@ -1,6 +1,6 @@
 [package]
-name = "toddy-iced-tester"
-description = "Vendored fork of iced_tester for Toddy UI -- A test recorder, editor, and runner for your iced applications"
+name = "plushie-iced-tester"
+description = "Vendored fork of iced_tester for Plushie UI -- A test recorder, editor, and runner for your iced applications"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true

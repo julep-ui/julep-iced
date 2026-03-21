@@ -1,6 +1,6 @@
 [package]
-name = "toddy-iced-selector"
-description = "Vendored fork of iced_selector for Toddy UI -- A set of abstractions for selecting data from the widget tree"
+name = "plushie-iced-selector"
+description = "Vendored fork of iced_selector for Plushie UI -- A set of abstractions for selecting data from the widget tree"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true

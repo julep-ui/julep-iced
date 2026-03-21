@@ -1,6 +1,6 @@
 [package]
-name = "toddy-iced-test"
-description = "Vendored fork of iced_test for Toddy UI -- A library for testing iced applications in headless mode"
+name = "plushie-iced-test"
+description = "Vendored fork of iced_test for Plushie UI -- A library for testing iced applications in headless mode"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true

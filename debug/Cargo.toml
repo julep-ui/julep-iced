@@ -1,6 +1,6 @@
 [package]
-name = "toddy-iced-debug"
-description = "Vendored fork of iced_debug for Toddy UI -- A pluggable API for debugging iced applications"
+name = "plushie-iced-debug"
+description = "Vendored fork of iced_debug for Plushie UI -- A pluggable API for debugging iced applications"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

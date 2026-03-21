@@ -1,6 +1,6 @@
 [package]
-name = "toddy-iced-devtools"
-description = "Vendored fork of iced_devtools for Toddy UI -- Attachable developer tools for any iced program"
+name = "plushie-iced-devtools"
+description = "Vendored fork of iced_devtools for Plushie UI -- Attachable developer tools for any iced program"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true

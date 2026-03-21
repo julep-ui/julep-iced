@@ -1,6 +1,6 @@
 [package]
-name = "toddy-iced-winit"
-description = "Vendored fork of iced_winit for Toddy UI -- A runtime for iced on top of winit"
+name = "plushie-iced-winit"
+description = "Vendored fork of iced_winit for Plushie UI -- A runtime for iced on top of winit"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

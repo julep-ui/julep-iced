@@ -1,4 +1,4 @@
-# toddy-iced - Development Tasks
+# plushie-iced - Development Tasks
 #
 # Run `just` to see available recipes.
 # Run `just preflight` before pushing to catch CI failures locally.

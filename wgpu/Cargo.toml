@@ -1,6 +1,6 @@
 [package]
-name = "toddy-iced-wgpu"
-description = "Vendored fork of iced_wgpu for Toddy UI -- A renderer for iced on top of wgpu"
+name = "plushie-iced-wgpu"
+description = "Vendored fork of iced_wgpu for Plushie UI -- A renderer for iced on top of wgpu"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

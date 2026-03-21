@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to toddy-iced will be documented in this file.
+All notable changes to plushie-iced will be documented in this file.
 This changelog tracks changes **specific to this fork**. For upstream
 iced changes, see the
 [iced changelog](https://github.com/iced-rs/iced/blob/master/CHANGELOG.md).
@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   correctly representing the case where no widget has focus
 
 ### Changed
-- **Breaking:** All crates renamed from `julep-iced-*` to `toddy-iced-*`
+- **Breaking:** All crates renamed from `julep-iced-*` to `plushie-iced-*`
 - **Breaking:** `find_focused` return type changed from `Task<Id>` to
   `Task<Option<Id>>`
 
@@ -100,7 +100,7 @@ Based on [iced 0.14.0](https://github.com/iced-rs/iced/blob/master/CHANGELOG.md#
   hardcoded values
 
 ### Changed
-- All crates renamed to `toddy-iced-*` for crates.io publishing
+- All crates renamed to `plushie-iced-*` for crates.io publishing
 - Switched from iced-rs winit fork to upstream winit
 
 ### Removed

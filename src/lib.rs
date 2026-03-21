@@ -1,6 +1,6 @@
-//! **toddy-iced** is a vendored fork of [iced](https://github.com/iced-rs/iced)
-//! maintained for the [Toddy](https://github.com/toddy-ui/toddy) project.
-//! See the [repository](https://github.com/toddy-ui/toddy-iced) for what's
+//! **plushie-iced** is a vendored fork of [iced](https://github.com/iced-rs/iced)
+//! maintained for the [Plushie](https://github.com/plushie-ui/plushie) project.
+//! See the [repository](https://github.com/plushie-ui/plushie-iced) for what's
 //! different from upstream.
 //!
 //! ---

@@ -1,6 +1,6 @@
 [package]
-name = "toddy-iced-renderer"
-description = "Vendored fork of iced_renderer for Toddy UI -- The official renderer for iced"
+name = "plushie-iced-renderer"
+description = "Vendored fork of iced_renderer for Plushie UI -- The official renderer for iced"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
