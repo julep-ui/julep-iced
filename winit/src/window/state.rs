@@ -181,6 +181,9 @@ where
             WindowEvent::ModifiersChanged(new_modifiers) => {
                 self.modifiers = new_modifiers.state();
             }
+            WindowEvent::Focused(false) => {
+                self.modifiers = winit::keyboard::ModifiersState::empty();
+            }
             WindowEvent::ThemeChanged(theme) => {
                 self.default_theme =
                     <P::Theme as theme::Base>::default(conversion::theme_mode(*theme));
