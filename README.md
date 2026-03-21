@@ -1,9 +1,11 @@
 # plushie-iced
 
 Vendored fork of [iced](https://github.com/iced-rs/iced) maintained
-for the [Plushie UI](https://github.com/plushie-ui) project. Tracks
-iced's master branch with additional features. Version numbers are
-independent of upstream iced releases.
+for the [Plushie UI](https://github.com/plushie-ui) project.
+**[Pre-1.0](#status)**
+
+Tracks iced's master branch with additional features. Version numbers
+are independent of upstream iced releases.
 
 ## What's different from upstream iced
 
@@ -14,15 +16,19 @@ independent of upstream iced releases.
 - Accessible properties on all built-in widgets: role, label,
   description, value, live regions, orientation, relationships
   (labelled-by, described-by), and more
-- Alt text support for Image and SVG widgets
+- Alt text and `decorative()` on Image and SVG
+- Tooltip and table (Row, Cell, ColumnHeader) roles
 - RadioGroup widget with proper radio group semantics
   (single Tab stop, arrow key navigation, active descendant tracking)
+- Canvas `operate_accessible()` and `is_focusable()` for
+  shape-level a11y and keyboard focus
 - Form validation, modal, busy, hidden, and read-only properties
 - Alt-key mnemonics mapped to AccessKit keyboard shortcuts
 
 ### Keyboard navigation
 
 - Tab/Shift+Tab focus cycling across all interactive widgets
+  (including focusable canvases)
 - Ctrl+Tab unconditional focus escape from any widget
 - Focus-visible pattern (focus ring on keyboard navigation only,
   not on mouse clicks)
@@ -72,6 +78,17 @@ independent of upstream iced releases.
 All crates are published under a `plushie-iced-` prefix. Cargo's
 `package` aliasing means Rust source code still uses `use iced::*`
 -- the renaming is entirely in Cargo.toml.
+
+## Status
+
+Pre-1.0. The accessibility and keyboard navigation layers are
+functional but the API is still evolving -- especially the canvas
+`Program` trait and accessible operation interfaces.
+
+- Pin to an exact version and read the
+  [CHANGELOG](CHANGELOG.md) when upgrading.
+- The canvas accessibility API (`operate_accessible`,
+  `is_focusable`) is the least stable part of the public surface.
 
 ## License
 

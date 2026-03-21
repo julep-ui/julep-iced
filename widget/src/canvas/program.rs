@@ -152,6 +152,6 @@ where
         canvas_bounds: Rectangle,
         operation: &mut dyn widget::Operation,
     ) {
-        T::operate_accessible(self, state, canvas_bounds, operation)
+        T::operate_accessible(self, state, canvas_bounds, operation);
     }
 }

@@ -282,9 +282,7 @@ where
     ) {
         let bounds = layout.bounds();
 
-        let widget_state = tree
-            .state
-            .downcast_mut::<CanvasWidgetState<P::State>>();
+        let widget_state = tree.state.downcast_mut::<CanvasWidgetState<P::State>>();
         let is_redraw_request =
             matches!(event, Event::Window(window::Event::RedrawRequested(_now)),);
 
@@ -296,9 +294,9 @@ where
             return;
         }
 
-        if let Some(action) =
-            self.program
-                .update(&mut widget_state.program, event, bounds, cursor)
+        if let Some(action) = self
+            .program
+            .update(&mut widget_state.program, event, bounds, cursor)
         {
             let (message, redraw_request, event_status) = action.into_inner();
 
@@ -317,9 +315,7 @@ where
             let mouse_interaction =
                 self.mouse_interaction(tree, layout, cursor, viewport, renderer);
 
-            let widget_state = tree
-                .state
-                .downcast_mut::<CanvasWidgetState<P::State>>();
+            let widget_state = tree.state.downcast_mut::<CanvasWidgetState<P::State>>();
             if is_redraw_request {
                 widget_state.last_mouse_interaction = Some(mouse_interaction);
             } else if widget_state
@@ -340,9 +336,7 @@ where
         _renderer: &Renderer,
     ) -> mouse::Interaction {
         let bounds = layout.bounds();
-        let widget_state = tree
-            .state
-            .downcast_ref::<CanvasWidgetState<P::State>>();
+        let widget_state = tree.state.downcast_ref::<CanvasWidgetState<P::State>>();
 
         self.program
             .mouse_interaction(&widget_state.program, bounds, cursor)
@@ -364,14 +358,12 @@ where
             return;
         }
 
-        let widget_state = tree
-            .state
-            .downcast_ref::<CanvasWidgetState<P::State>>();
+        let widget_state = tree.state.downcast_ref::<CanvasWidgetState<P::State>>();
 
         renderer.with_translation(Vector::new(bounds.x, bounds.y), |renderer| {
-            let layers =
-                self.program
-                    .draw(&widget_state.program, renderer, theme, bounds, cursor);
+            let layers = self
+                .program
+                .draw(&widget_state.program, renderer, theme, bounds, cursor);
 
             for layer in layers {
                 renderer.draw_geometry(layer);
@@ -387,9 +379,7 @@ where
         operation: &mut dyn widget::Operation,
     ) {
         let bounds = layout.bounds();
-        let widget_state = tree
-            .state
-            .downcast_mut::<CanvasWidgetState<P::State>>();
+        let widget_state = tree.state.downcast_mut::<CanvasWidgetState<P::State>>();
 
         // Canvas-level accessible node.
         operation.accessible(
