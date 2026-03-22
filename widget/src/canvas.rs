@@ -395,7 +395,8 @@ where
 
         // Focus integration: register as focusable when the Program
         // has interactive elements that need keyboard access.
-        if self.program.is_focusable(&widget_state.program) {
+        let focusable = self.program.is_focusable(&widget_state.program);
+        if focusable {
             operation.focusable(None, bounds, widget_state);
         } else {
             // Program no longer accepts focus (e.g., interactive shapes
