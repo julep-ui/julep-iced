@@ -87,7 +87,16 @@ where
     ///
     /// Returns actions to emit (typically messages for the host application).
     /// The default implementation does nothing.
-    fn on_focus_gained(&self, _state: &mut Self::State) -> Vec<Action<Message>> {
+    ///
+    /// `focus_visible` indicates whether the focus indicator should be
+    /// shown. `true` when focus was gained via keyboard (Tab navigation),
+    /// `false` when gained via mouse click. This matches the
+    /// "focus-visible" pattern used by iced's built-in widgets.
+    fn on_focus_gained(
+        &self,
+        _state: &mut Self::State,
+        _focus_visible: bool,
+    ) -> Vec<Action<Message>> {
         vec![]
     }
 
@@ -172,8 +181,12 @@ where
         T::is_focusable(self, state)
     }
 
-    fn on_focus_gained(&self, state: &mut Self::State) -> Vec<Action<Message>> {
-        T::on_focus_gained(self, state)
+    fn on_focus_gained(
+        &self,
+        state: &mut Self::State,
+        focus_visible: bool,
+    ) -> Vec<Action<Message>> {
+        T::on_focus_gained(self, state, focus_visible)
     }
 
     fn on_focus_lost(&self, state: &mut Self::State) -> Vec<Action<Message>> {

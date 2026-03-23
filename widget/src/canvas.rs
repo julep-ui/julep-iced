@@ -64,6 +64,7 @@ use crate::core::event;
 use crate::core::layout::{self, Layout};
 use crate::core::mouse;
 use crate::core::renderer;
+use crate::core::touch;
 use crate::core::widget;
 use crate::core::widget::operation::accessible::{Accessible, Role};
 use crate::core::widget::tree::{self, Tree};
@@ -254,6 +255,10 @@ struct CanvasWidgetState<S: Default + 'static> {
     /// on_focus_gained or on_focus_lost callback.
     /// `Some(true)` = gained, `Some(false)` = lost.
     pending_focus_notification: Option<bool>,
+    /// Whether the focus indicator should be visible. Set `true` when
+    /// focus is gained via keyboard (Tab), `false` when gained via mouse
+    /// click. Matches iced's "focus-visible" pattern.
+    focus_visible: bool,
 }
 
 impl<S: Default + 'static> Default for CanvasWidgetState<S> {
@@ -263,6 +268,7 @@ impl<S: Default + 'static> Default for CanvasWidgetState<S> {
             is_focused: false,
             last_mouse_interaction: None,
             pending_focus_notification: None,
+            focus_visible: false,
         }
     }
 }
@@ -274,6 +280,7 @@ impl<S: Default + 'static> widget::operation::focusable::Focusable for CanvasWid
 
     fn focus(&mut self) {
         self.is_focused = true;
+        self.focus_visible = true;
     }
 
     fn unfocus(&mut self) {
@@ -346,11 +353,34 @@ where
         let is_redraw_request =
             matches!(event, Event::Window(window::Event::RedrawRequested(_now)),);
 
+        // Clear focus when a mouse click happens outside our bounds -- even
+        // if the event was captured by a sibling widget. Without this, the
+        // canvas retains is_focused when the user clicks a text_input, and
+        // Tab order gets confused. Same pattern as iced's button widget.
+        if matches!(
+            event,
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+                | Event::Touch(touch::Event::FingerPressed { .. })
+        ) && !cursor.is_over(bounds)
+        {
+            if widget_state.is_focused {
+                widget_state.is_focused = false;
+                widget_state.focus_visible = false;
+                // Fire on_focus_lost so the Program clears canvas_focused.
+                process_actions(
+                    self.program.on_focus_lost(&mut widget_state.program),
+                    shell,
+                );
+            }
+        }
+
         // Drain any pending focus notification queued by operate()
         // (e.g. from Tab navigation).
         if let Some(gained) = widget_state.pending_focus_notification.take() {
             let actions = if gained {
-                self.program.on_focus_gained(&mut widget_state.program)
+                // Tab navigation: focus_visible = true (from Focusable::focus)
+                self.program
+                    .on_focus_gained(&mut widget_state.program, widget_state.focus_visible)
             } else {
                 self.program.on_focus_lost(&mut widget_state.program)
             };
@@ -377,6 +407,9 @@ where
             && self.program.is_focusable(&widget_state.program)
         {
             widget_state.is_focused = true;
+            // Always clear focus_visible on click, even if already focused.
+            // Focus ring only shows for keyboard navigation.
+            widget_state.focus_visible = false;
         }
 
         if let Some(action) = self
@@ -400,7 +433,8 @@ where
         // click-to-focus or direct state changes within this update.
         if !was_focused && widget_state.is_focused {
             process_actions(
-                self.program.on_focus_gained(&mut widget_state.program),
+                self.program
+                    .on_focus_gained(&mut widget_state.program, widget_state.focus_visible),
                 shell,
             );
         } else if was_focused && !widget_state.is_focused {
