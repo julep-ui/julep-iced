@@ -144,8 +144,11 @@ where
     width: Length,
     height: Length,
     program: P,
+    id: Option<widget::Id>,
     alt: Option<String>,
     description: Option<String>,
+    role: Option<Role>,
+    active_descendant: Option<widget::Id>,
     message_: PhantomData<Message>,
     theme_: PhantomData<Theme>,
     renderer_: PhantomData<Renderer>,
@@ -164,8 +167,11 @@ where
             width: Length::Fixed(Self::DEFAULT_SIZE),
             height: Length::Fixed(Self::DEFAULT_SIZE),
             program,
+            id: None,
             alt: None,
             description: None,
+            role: None,
+            active_descendant: None,
             message_: PhantomData,
             theme_: PhantomData,
             renderer_: PhantomData,
@@ -200,6 +206,36 @@ where
         self.description = Some(description.into());
         self
     }
+
+    /// Sets the widget ID for focus targeting and accessibility.
+    ///
+    /// When set, `Command.focus(id)` can target this canvas specifically.
+    /// Without an ID, the canvas can still be focused via Tab navigation
+    /// but cannot be targeted programmatically.
+    pub fn id(mut self, id: widget::Id) -> Self {
+        self.id = Some(id);
+        self
+    }
+
+    /// Sets the accessible role of the canvas.
+    ///
+    /// Defaults to [`Role::Image`] for static canvases. Interactive canvases
+    /// with focusable elements should use [`Role::Group`], [`Role::Toolbar`],
+    /// [`Role::RadioGroup`], or another appropriate composite widget role.
+    pub fn role(mut self, role: Role) -> Self {
+        self.role = Some(role);
+        self
+    }
+
+    /// Sets the active descendant for accessibility.
+    ///
+    /// Points to the widget ID of the currently focused child element
+    /// within the canvas. Screen readers use this to announce which
+    /// element has focus in a composite widget.
+    pub fn active_descendant(mut self, id: widget::Id) -> Self {
+        self.active_descendant = Some(id);
+        self
+    }
 }
 
 /// Canvas-level widget state wrapping the Program's state with focus
@@ -213,6 +249,11 @@ struct CanvasWidgetState<S: Default + 'static> {
     /// changes and request redraws. Lives here (not on the Canvas widget
     /// struct) because the widget is rebuilt every frame by view().
     last_mouse_interaction: Option<mouse::Interaction>,
+    /// Set by operate() when iced's focus system changes focus state
+    /// (e.g. Tab navigation). The next update() call fires the
+    /// on_focus_gained or on_focus_lost callback.
+    /// `Some(true)` = gained, `Some(false)` = lost.
+    pending_focus_notification: Option<bool>,
 }
 
 impl<S: Default + 'static> Default for CanvasWidgetState<S> {
@@ -221,6 +262,7 @@ impl<S: Default + 'static> Default for CanvasWidgetState<S> {
             program: S::default(),
             is_focused: false,
             last_mouse_interaction: None,
+            pending_focus_notification: None,
         }
     }
 }
@@ -236,6 +278,24 @@ impl<S: Default + 'static> widget::operation::focusable::Focusable for CanvasWid
 
     fn unfocus(&mut self) {
         self.is_focused = false;
+    }
+}
+
+/// Process a list of [`Action`]s from a Program callback, publishing
+/// messages and handling redraw requests and event capture.
+fn process_actions<Message>(
+    actions: Vec<crate::Action<Message>>,
+    shell: &mut Shell<'_, Message>,
+) {
+    for action in actions {
+        let (message, redraw_request, event_status) = action.into_inner();
+        shell.request_redraw_at(redraw_request);
+        if let Some(message) = message {
+            shell.publish(message);
+        }
+        if event_status == event::Status::Captured {
+            shell.capture_event();
+        }
     }
 }
 
@@ -286,12 +346,37 @@ where
         let is_redraw_request =
             matches!(event, Event::Window(window::Event::RedrawRequested(_now)),);
 
+        // Drain any pending focus notification queued by operate()
+        // (e.g. from Tab navigation).
+        if let Some(gained) = widget_state.pending_focus_notification.take() {
+            let actions = if gained {
+                self.program.on_focus_gained(&mut widget_state.program)
+            } else {
+                self.program.on_focus_lost(&mut widget_state.program)
+            };
+            process_actions(actions, shell);
+        }
+
         // Only forward keyboard and IME events to the Program when the
         // canvas is focused in iced's focus system. Mouse events always
         // pass through regardless of focus state.
         let is_keyboard_like = matches!(event, Event::Keyboard(_) | Event::InputMethod(_));
         if is_keyboard_like && !widget_state.is_focused {
             return;
+        }
+
+        let was_focused = widget_state.is_focused;
+
+        // Click-to-focus: when a left click lands inside bounds and
+        // the Program is focusable, claim focus directly (matching
+        // the pattern used by text_input).
+        if matches!(
+            event,
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+        ) && cursor.is_over(bounds)
+            && self.program.is_focusable(&widget_state.program)
+        {
+            widget_state.is_focused = true;
         }
 
         if let Some(action) = self
@@ -309,6 +394,20 @@ where
             if event_status == event::Status::Captured {
                 shell.capture_event();
             }
+        }
+
+        // Fire focus lifecycle callbacks on transitions caused by
+        // click-to-focus or direct state changes within this update.
+        if !was_focused && widget_state.is_focused {
+            process_actions(
+                self.program.on_focus_gained(&mut widget_state.program),
+                shell,
+            );
+        } else if was_focused && !widget_state.is_focused {
+            process_actions(
+                self.program.on_focus_lost(&mut widget_state.program),
+                shell,
+            );
         }
 
         if shell.redraw_request() != window::RedrawRequest::NextFrame {
@@ -383,12 +482,13 @@ where
 
         // Canvas-level accessible node.
         operation.accessible(
-            None,
+            self.id.as_ref(),
             bounds,
             &Accessible {
-                role: Role::Image,
+                role: self.role.unwrap_or(Role::Image),
                 label: self.alt.as_deref(),
                 description: self.description.as_deref(),
+                active_descendant: self.active_descendant.as_ref(),
                 ..Accessible::default()
             },
         );
@@ -397,11 +497,25 @@ where
         // has interactive elements that need keyboard access.
         let focusable = self.program.is_focusable(&widget_state.program);
         if focusable {
-            operation.focusable(None, bounds, widget_state);
+            let was_focused = widget_state.is_focused;
+            operation.focusable(self.id.as_ref(), bounds, widget_state);
+
+            // Detect focus transitions caused by iced's operate pass
+            // (e.g. Tab navigation, programmatic focus). Queue a
+            // notification for the next update() since we have no
+            // Shell here.
+            if !was_focused && widget_state.is_focused {
+                widget_state.pending_focus_notification = Some(true);
+            } else if was_focused && !widget_state.is_focused {
+                widget_state.pending_focus_notification = Some(false);
+            }
         } else {
             // Program no longer accepts focus (e.g., interactive shapes
             // were removed). Clear the flag so keyboard events stop.
-            widget_state.is_focused = false;
+            if widget_state.is_focused {
+                widget_state.is_focused = false;
+                widget_state.pending_focus_notification = Some(false);
+            }
         }
 
         // Accessible child nodes via the Program.

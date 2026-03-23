@@ -83,6 +83,22 @@ where
         false
     }
 
+    /// Called when the canvas gains iced-level focus (via Tab or click).
+    ///
+    /// Returns actions to emit (typically messages for the host application).
+    /// The default implementation does nothing.
+    fn on_focus_gained(&self, _state: &mut Self::State) -> Vec<Action<Message>> {
+        vec![]
+    }
+
+    /// Called when the canvas loses iced-level focus.
+    ///
+    /// Returns actions to emit (typically messages for the host application).
+    /// The default implementation does nothing.
+    fn on_focus_lost(&self, _state: &mut Self::State) -> Vec<Action<Message>> {
+        vec![]
+    }
+
     /// Emit accessible child nodes within the canvas.
     ///
     /// Called by the canvas widget's `operate()` method inside a
@@ -144,6 +160,14 @@ where
 
     fn is_focusable(&self, state: &Self::State) -> bool {
         T::is_focusable(self, state)
+    }
+
+    fn on_focus_gained(&self, state: &mut Self::State) -> Vec<Action<Message>> {
+        T::on_focus_gained(self, state)
+    }
+
+    fn on_focus_lost(&self, state: &mut Self::State) -> Vec<Action<Message>> {
+        T::on_focus_lost(self, state)
     }
 
     fn operate_accessible(
