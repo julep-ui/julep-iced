@@ -9,17 +9,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-03-23
+
 ### Added
 
 - Canvas: click-to-focus -- clicking inside a focusable canvas grants
   iced-level focus (matching text_input behavior)
-- Canvas: `on_focus_gained()` / `on_focus_lost()` callbacks on the
-  `Program` trait for focus lifecycle notifications
+- Canvas: `on_focus_gained(state, focus_visible)` / `on_focus_lost()`
+  callbacks on the `Program` trait for focus lifecycle notifications.
+  `focus_visible` is true for keyboard navigation, false for mouse clicks.
 - Canvas: `active_descendant_id()` on `Program` trait -- dynamically
   resolves the focused child element for accessibility
 - Canvas: `.id()` builder for widget ID (enables `Command.focus(id)` targeting)
 - Canvas: `.role()` builder for configurable accessible role
 - Canvas: `.active_descendant()` builder for static active descendant
+- Canvas: focus-visible pattern -- `focus_visible` bool on widget state,
+  true for Tab navigation, false for mouse clicks. Focus indicators only
+  show for keyboard navigation.
+- `RadioGroup` variant in accessible `Role` enum
 - `process_actions` helper function for draining `Vec<Action>` through a Shell
 
 ### Fixed
@@ -27,9 +34,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Button: clear focus on external click even when the event was captured
   by a sibling widget. Fixes dual focus indicators and Tab going to the
   wrong widget after clicking a text field.
+- Canvas: clear focus on external click (same pattern as button fix).
+  Prevents stale focus when clicking a sibling widget.
 
 ### Changed
 
+- **Breaking:** `on_focus_gained` now takes a `focus_visible: bool` parameter
 - Canvas `operate()` resolves `active_descendant` dynamically from
   `Program::active_descendant_id()`, falling back to the static field
 

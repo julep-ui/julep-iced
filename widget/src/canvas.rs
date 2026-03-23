@@ -290,10 +290,7 @@ impl<S: Default + 'static> widget::operation::focusable::Focusable for CanvasWid
 
 /// Process a list of [`Action`]s from a Program callback, publishing
 /// messages and handling redraw requests and event capture.
-fn process_actions<Message>(
-    actions: Vec<crate::Action<Message>>,
-    shell: &mut Shell<'_, Message>,
-) {
+fn process_actions<Message>(actions: Vec<crate::Action<Message>>, shell: &mut Shell<'_, Message>) {
     for action in actions {
         let (message, redraw_request, event_status) = action.into_inner();
         shell.request_redraw_at(redraw_request);
@@ -362,16 +359,12 @@ where
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. })
         ) && !cursor.is_over(bounds)
+            && widget_state.is_focused
         {
-            if widget_state.is_focused {
-                widget_state.is_focused = false;
-                widget_state.focus_visible = false;
-                // Fire on_focus_lost so the Program clears canvas_focused.
-                process_actions(
-                    self.program.on_focus_lost(&mut widget_state.program),
-                    shell,
-                );
-            }
+            widget_state.is_focused = false;
+            widget_state.focus_visible = false;
+            // Fire on_focus_lost so the Program clears canvas_focused.
+            process_actions(self.program.on_focus_lost(&mut widget_state.program), shell);
         }
 
         // Drain any pending focus notification queued by operate()
@@ -438,10 +431,7 @@ where
                 shell,
             );
         } else if was_focused && !widget_state.is_focused {
-            process_actions(
-                self.program.on_focus_lost(&mut widget_state.program),
-                shell,
-            );
+            process_actions(self.program.on_focus_lost(&mut widget_state.program), shell);
         }
 
         if shell.redraw_request() != window::RedrawRequest::NextFrame {
@@ -518,9 +508,7 @@ where
         // dynamically from the Program's state (focused element ID) rather
         // than from the static Canvas struct field, so it stays in sync
         // with keyboard navigation.
-        let dynamic_active_desc = self
-            .program
-            .active_descendant_id(&widget_state.program);
+        let dynamic_active_desc = self.program.active_descendant_id(&widget_state.program);
         operation.accessible(
             self.id.as_ref(),
             bounds,

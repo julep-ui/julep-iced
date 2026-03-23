@@ -292,6 +292,7 @@ fn convert_role(role: IcedRole) -> Role {
         IcedRole::Navigation => Role::Navigation,
         IcedRole::ProgressIndicator => Role::ProgressIndicator,
         IcedRole::RadioButton => Role::RadioButton,
+        IcedRole::RadioGroup => Role::RadioGroup,
         IcedRole::Region => Role::Region,
         IcedRole::ScrollBar => Role::ScrollBar,
         IcedRole::ScrollView => Role::ScrollView,

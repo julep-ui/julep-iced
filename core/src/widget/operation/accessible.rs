@@ -67,6 +67,8 @@ pub enum Role {
     ProgressIndicator,
     /// A radio button.
     RadioButton,
+    /// A container for a set of radio buttons.
+    RadioGroup,
     /// A generic landmark region.
     Region,
     /// A scrollbar control.
