@@ -9,6 +9,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-04-02
+
+### Changed
+
+- Remove `debug_assertions` gate from null renderer (`()`) trait
+  impls. Mock mode now works in release builds, which is required
+  for precompiled binary downloads used in test suites.
+
 ## [0.8.1] - 2026-04-02
 
 ### Changed

@@ -222,7 +222,6 @@ pub trait Backend: Sized {
     fn into_geometry(self) -> Self::Geometry;
 }
 
-#[cfg(debug_assertions)]
 impl Backend for () {
     type Geometry = ();
 
