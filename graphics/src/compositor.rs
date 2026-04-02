@@ -195,7 +195,6 @@ pub struct Information {
     pub backend: String,
 }
 
-#[cfg(debug_assertions)]
 impl Compositor for () {
     type Renderer = ();
     type Surface = ();
@@ -258,7 +257,6 @@ impl Compositor for () {
     }
 }
 
-#[cfg(debug_assertions)]
 impl Default for () {
     type Compositor = ();
 }

@@ -9,6 +9,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.8.3] - 2026-04-02
+
+### Fixed
+
+- Remove remaining `debug_assertions` gates from null renderer impls
+  in graphics cache and compositor modules. The 0.8.2 release missed
+  these, causing release builds to fail.
+
 ## [0.8.2] - 2026-04-02
 
 ### Changed
